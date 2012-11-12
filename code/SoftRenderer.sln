@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoftRenderer", "SoftRenderer\SoftRenderer.vcxproj", "{EF60994C-480F-406A-BE9A-4AEEC3EC277A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		PreRelease|Win32 = PreRelease|Win32
+		PreRelease|x64 = PreRelease|x64
+		Profile|Win32 = Profile|Win32
+		Profile|x64 = Profile|x64
+		Release_IntelCompiler_AVX|Win32 = Release_IntelCompiler_AVX|Win32
+		Release_IntelCompiler_AVX|x64 = Release_IntelCompiler_AVX|x64
+		Release_IntelCompiler|Win32 = Release_IntelCompiler|Win32
+		Release_IntelCompiler|x64 = Release_IntelCompiler|x64
+		Release_Vc10Compiler|Win32 = Release_Vc10Compiler|Win32
+		Release_Vc10Compiler|x64 = Release_Vc10Compiler|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Debug|Win32.Build.0 = Debug|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Debug|x64.ActiveCfg = Debug|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Debug|x64.Build.0 = Debug|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.PreRelease|Win32.ActiveCfg = PreRelease|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.PreRelease|Win32.Build.0 = PreRelease|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.PreRelease|x64.ActiveCfg = PreRelease|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.PreRelease|x64.Build.0 = PreRelease|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Profile|Win32.ActiveCfg = Profile|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Profile|Win32.Build.0 = Profile|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Profile|x64.ActiveCfg = Profile|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Profile|x64.Build.0 = Profile|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler_AVX|Win32.ActiveCfg = Release_IntelCompiler_AVX|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler_AVX|Win32.Build.0 = Release_IntelCompiler_AVX|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler_AVX|x64.ActiveCfg = Release_IntelCompiler_AVX|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler_AVX|x64.Build.0 = Release_IntelCompiler_AVX|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler|Win32.ActiveCfg = Release_IntelCompiler|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler|Win32.Build.0 = Release_IntelCompiler|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler|x64.ActiveCfg = Release_IntelCompiler|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_IntelCompiler|x64.Build.0 = Release_IntelCompiler|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_Vc10Compiler|Win32.ActiveCfg = Release_Vc10Compiler|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_Vc10Compiler|Win32.Build.0 = Release_Vc10Compiler|Win32
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_Vc10Compiler|x64.ActiveCfg = Release_Vc10Compiler|x64
+		{EF60994C-480F-406A-BE9A-4AEEC3EC277A}.Release_Vc10Compiler|x64.Build.0 = Release_Vc10Compiler|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

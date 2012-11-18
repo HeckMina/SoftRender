@@ -14,40 +14,13 @@
 #define SrShadingMode_h__
 
 #include "prerequisite.h"
-#include "SrResource.h"
+#include "shading.h"
 
-/**
- *@brief ShadingMode基类
- *@remark Shader类，涵盖物体的着色策略。其中VS,RS,PS每种着色必须实现
-   PATCH SHADER为光栅化前对独立三角面片的处理机会，需要处理这一阶段的着色策略可以选择实现。
- */
-class SrShader : public SrResource
+
+class SrFlatShader : public SrSwShader
 {
 public:
-	SrShader(const char* name):SrResource(name, eRT_Shader) {}
-	virtual ~SrShader(void) {}
-
-	/**
-	 *@brief Patch Shader, 在光栅化前，对三角面三个顶点进行重新运算的着色器。继承的着色策略按需实现。
-	 *@return void 
-	 *@param void * vOut 
-	 *@param void * vOut1 
-	 *@param void * vOut2 
-	 *@param const void * vInRef0 
-	 *@param const void * vInRef1 
-	 *@param const void * vInRef2 
-	 *@param const SrShaderContext * context 
-	 */
-	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const{}
-	virtual void SRFASTCALL ProcessVertex(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context) const =0;
-	virtual void SRFASTCALL ProcessRasterize(void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final = false) const = 0;
-	virtual void SRFASTCALL ProcessPixel(uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address) const =0;
-};
-
-class SrFlatShader : public SrShader
-{
-public:
-	SrFlatShader():SrShader("FlatShader") {}
+	SrFlatShader():SrSwShader("FlatShader") {}
 	~SrFlatShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -56,10 +29,10 @@ public:
 	virtual void SRFASTCALL ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const;
 };
 
-class SrGourandShader : public SrShader
+class SrGourandShader : public SrSwShader
 {
 public:
-	SrGourandShader():SrShader("GourandShader") {}
+	SrGourandShader():SrSwShader("GourandShader") {}
 	~SrGourandShader() {}
 
 	virtual void SRFASTCALL ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -67,10 +40,10 @@ public:
 	virtual void SRFASTCALL ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const;
 };
 
-class SrPhongShader : public SrShader
+class SrPhongShader : public SrSwShader
 {
 public:
-	SrPhongShader():SrShader("PhongShader") {}
+	SrPhongShader():SrSwShader("PhongShader") {}
 	~SrPhongShader() {}
 
 	virtual void SRFASTCALL ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -79,10 +52,10 @@ public:
 };
 
 
-class SrPhongWithNormalShader : public SrShader
+class SrPhongWithNormalShader : public SrSwShader
 {
 public:
-	SrPhongWithNormalShader():SrShader("PhongWithNormalMapShader") {}
+	SrPhongWithNormalShader():SrSwShader("PhongWithNormalMapShader") {}
 	~SrPhongWithNormalShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;

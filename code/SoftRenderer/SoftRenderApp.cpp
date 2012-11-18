@@ -11,9 +11,7 @@
 
 #include "mmgr/mmgr.h"
 
-
-
-GlobalEnvironment gEnv;
+GlobalEnvironment* gEnv = NULL;
 // Forward declarations of functions included in this code module:
 
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -138,10 +136,12 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 		return FALSE;
 	}
 
+	gEnv = new GlobalEnvironment;
+
 	// 创建资源管理器
-	gEnv.resourceMgr = new SrResourceManager;
-	LoadInternalShaders();
-	gEnv.resourceMgr->InitDefaultMedia();
+	gEnv->resourceMgr = new SrResourceManager;
+	//LoadInternalShaders();
+	gEnv->resourceMgr->InitDefaultMedia();
 
 	// 创建Render上下文
 	g_context = new SrRendContext(createWidth, createHeight, 32);
@@ -150,20 +150,21 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	
  	m_pSwRenderer = new SrSoftRenderer;
  	m_pRenderer = m_pSwRenderer;
-	gEnv.renderer = m_pRenderer;
+	gEnv->renderer = m_pRenderer;
 
 	m_pSwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
 	m_pHwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
 	
+	gEnv->resourceMgr->ReloadShaders();
 
-	gEnv.timer = new SrTimer;
-	gEnv.timer->Init();
+	gEnv->timer = new SrTimer;
+	gEnv->timer->Init();
 
-	gEnv.inputSys = new SrInputManager;
-	gEnv.inputSys->Init(m_hWnd);
-	gEnv.inputSys->AddListener(this);
+	gEnv->inputSys = new SrInputManager;
+	gEnv->inputSys->Init(m_hWnd);
+	gEnv->inputSys->AddListener(this);
 
-	gEnv.profiler = new SrProfiler;
+	gEnv->profiler = new SrProfiler;
 
 
 	// 显示窗口
@@ -204,11 +205,11 @@ static Quat g_rot = Quat::CreateIdentity();
 bool SoftRenderApp::Update()
 {
 
-	gEnv.profiler->setBegin(ePe_FrameTime);
+	gEnv->profiler->setBegin(ePe_FrameTime);
 
-	gEnv.timer->Update();
+	gEnv->timer->Update();
 
-	gEnv.inputSys->Update();
+	gEnv->inputSys->Update();
 
 	if (!m_pRenderer)
 	{
@@ -224,12 +225,12 @@ bool SoftRenderApp::Update()
 		(*it)->OnUpdate();
 	}
 
-	gEnv.profiler->Update();
+	gEnv->profiler->Update();
 
 	//g_context->GetSBuffer();
 	m_pRenderer->EndFrame();
 
-	gEnv.profiler->setEnd(ePe_FrameTime);
+	gEnv->profiler->setEnd(ePe_FrameTime);
 
 	return true;
 }
@@ -246,7 +247,7 @@ void SoftRenderApp::Destroy()
 	}
 
 	delete g_context;
-	delete gEnv.resourceMgr;
+	delete gEnv->resourceMgr;
 
 	if (m_pHwRenderer)
 	{
@@ -262,21 +263,23 @@ void SoftRenderApp::Destroy()
 		m_pSwRenderer = NULL;
 	}
 
-	if (gEnv.timer)
+	if (gEnv->timer)
 	{
-		delete gEnv.timer;
+		delete gEnv->timer;
 	}
 
-	if (gEnv.inputSys)
+	if (gEnv->inputSys)
 	{
-		gEnv.inputSys->Destroy();
-		delete gEnv.inputSys;
+		gEnv->inputSys->Destroy();
+		delete gEnv->inputSys;
 	}
 
-	if (gEnv.profiler)
+	if (gEnv->profiler)
 	{
-		delete gEnv.profiler;
+		delete gEnv->profiler;
 	}
+
+	delete gEnv;
 }
 
 void SoftRenderApp::Run()
@@ -358,7 +361,7 @@ bool SoftRenderApp::OnInputEvent( const SInputEvent &event )
 						m_pRenderer = m_pHwRenderer;
 					}
 
-					gEnv.renderer = m_pRenderer;
+					gEnv->renderer = m_pRenderer;
 				}
 			}
 			break;

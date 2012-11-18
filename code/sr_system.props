@@ -6,7 +6,7 @@
     <OutDir>$(SolutionDir)\..\bin32\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
-    <IntDir>$(SolutionDir)\..\immediate\$(Configuration)\$(Platform)\</IntDir>
+    <IntDir>$(SolutionDir)\..\immediate\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>

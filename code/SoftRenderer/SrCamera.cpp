@@ -28,7 +28,7 @@ void SrCamera::Update()
 	if (g_context->IsFeatureEnable(eRFeature_JitAA))
 	{
 		int i = 1;
-		if (gEnv.renderer->getFrameCount() % 2 ==0)
+		if (gEnv->renderer->getFrameCount() % 2 ==0)
 		{
 			i = -1;
 		}

@@ -16,7 +16,7 @@ SrMaterial::SrMaterial( const char* name ):SrResource(name,  eRT_Material)
 	m_alphaTest = false;
 
 	//LoadFromFile();
-	SetShader(gEnv.resourceMgr->GetShader("PhongShader"));
+	SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
 }
 
 void SrMaterial::ApplyTextures() const
@@ -26,13 +26,13 @@ void SrMaterial::ApplyTextures() const
 	int index = 0;
 	for (; it != m_textures.end(); ++it, ++index)
 	{
-		gEnv.renderer->SetTextureStage( *it , index );
+		gEnv->renderer->SetTextureStage( *it , index );
 	}
 }
 
 void SrMaterial::LoadFromFile()
 {
-	SetShader(gEnv.resourceMgr->GetShader("PhongShader"));
+	SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
 
 	SrObjLoader loader;
 
@@ -51,14 +51,14 @@ void SrMaterial::LoadFromFile()
 // 		sprintf_s(msg, "文件[ %s ]未找到！使用默认资源。", realname.c_str());
 // 		MessageBox(NULL, msg, "SrResourceManager", MB_OK );
 // 
-// 		loader.LoadMaterialFromMTL( gEnv.resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
+// 		loader.LoadMaterialFromMTL( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
 // 	}
 	
 }
 
 void SrMaterial::ApplyShaderConstants() const
 {
-	gEnv.renderer->SetShaderConstant(eSC_PS0, &(m_matDiffuse.x), 1);
-	gEnv.renderer->SetShaderConstant(eSC_PS1, &(m_matSpecular.x), 1);
-	gEnv.renderer->SetShaderConstant(eSC_PS2, &(m_glossness), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS0, &(m_matDiffuse.x), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS1, &(m_matSpecular.x), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS2, &(m_glossness), 1);
 }

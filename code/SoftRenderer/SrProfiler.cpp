@@ -25,13 +25,13 @@ SrProfiler::~SrProfiler()
 
 void SrProfiler::setBegin( EProfilerElement element )
 {
-	m_profileElements[element].prevTime = gEnv.timer->getRealTime();
+	m_profileElements[element].prevTime = gEnv->timer->getRealTime();
 }
 
 void SrProfiler::setEnd( EProfilerElement element )
 {
 	SrProfilerElement& elementInst = m_profileElements[element];
-	float now = gEnv.timer->getRealTime();
+	float now = gEnv->timer->getRealTime();
 	elementInst.elapsedTime = now - elementInst.prevTime;
 }
 
@@ -66,46 +66,46 @@ void SrProfiler::Update()
 {
 	char buffer[512];
 	sprintf_s(buffer, "SoftRENDERER v0.1 | Fps: %.2f | FT: %.2fms | %s | %s | %s", 
-		1000.f / gEnv.profiler->getAverageTime(ePe_FrameTime), 
-		gEnv.profiler->getAverageTime(ePe_FrameTime),
+		1000.f / gEnv->profiler->getAverageTime(ePe_FrameTime), 
+		gEnv->profiler->getAverageTime(ePe_FrameTime),
 		g_context->IsFeatureEnable(eRFeature_MThreadRendering) ? "MT" : "ST",
 		g_context->IsFeatureEnable(eRFeature_JitAA) ? "jitAA on" : "jitAA off",
 		g_context->IsFeatureEnable(eRFeature_LinearFiltering) ? "LinearF" : "PointF"
 		);
-	gEnv.renderer->DrawScreenText( buffer, 20, 5, 0, SR_UICOLOR_MAIN );
+	gEnv->renderer->DrawScreenText( buffer, 20, 5, 0, SR_UICOLOR_MAIN );
 
 	sprintf_s(buffer, "DP:%5.2fms | Flush:%5.2fms | CLT:%5.2fms | VST:%5.2fms | RST:%5.2fms | PST:%5.2fms | PPT:%5.2fms ", 
 
-		gEnv.profiler->getAverageTime(ePe_DrawCallTime),
-		//gEnv.profiler->getAverageTime(ePe_DrawCallAllocTime),
-		gEnv.profiler->getAverageTime(ePe_FlushTime),
-		gEnv.profiler->getAverageTime(ePe_ClearTime),
-		gEnv.profiler->getAverageTime(ePe_VertexShaderTime),
-		gEnv.profiler->getAverageTime(ePe_RasterizeShaderTime),
-		gEnv.profiler->getAverageTime(ePe_PixelShaderTime),
-		gEnv.profiler->getAverageTime(ePe_PostProcessTime));
-		gEnv.renderer->DrawScreenText( buffer, 20, 20, 1, SR_UICOLOR_NORMAL );
+		gEnv->profiler->getAverageTime(ePe_DrawCallTime),
+		//gEnv->profiler->getAverageTime(ePe_DrawCallAllocTime),
+		gEnv->profiler->getAverageTime(ePe_FlushTime),
+		gEnv->profiler->getAverageTime(ePe_ClearTime),
+		gEnv->profiler->getAverageTime(ePe_VertexShaderTime),
+		gEnv->profiler->getAverageTime(ePe_RasterizeShaderTime),
+		gEnv->profiler->getAverageTime(ePe_PixelShaderTime),
+		gEnv->profiler->getAverageTime(ePe_PostProcessTime));
+		gEnv->renderer->DrawScreenText( buffer, 20, 20, 1, SR_UICOLOR_NORMAL );
 
 	sprintf_s(buffer, "Batch: %3d | Tri: %6d | Pixel: %6d | Vertex: %6d", 
-		gEnv.profiler->getCount(ePe_BatchCount),
-		gEnv.profiler->getCount(ePe_TriangleCount),
-		gEnv.profiler->getCount(ePe_PixelCount),
-		gEnv.profiler->getCount(ePe_VertexCount)
+		gEnv->profiler->getCount(ePe_BatchCount),
+		gEnv->profiler->getCount(ePe_TriangleCount),
+		gEnv->profiler->getCount(ePe_PixelCount),
+		gEnv->profiler->getCount(ePe_VertexCount)
 		);
-	gEnv.renderer->DrawScreenText( buffer, 20, 30, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( buffer, 20, 30, 1, SR_UICOLOR_NORMAL );
 
 	sprintf_s(buffer, "Processor: %d | Task M/0/1/2/3/4/5/6: %4d/%4d/%4d/%4d/%4d/%4d/%4d/%4d", 
 		g_context->processorNum,
-		gEnv.profiler->getCount(ePe_MainThreadTaskNum),
-		gEnv.profiler->getCount(ePe_Thread0TaskNum),
-		gEnv.profiler->getCount(ePe_Thread1TaskNum),
-		gEnv.profiler->getCount(ePe_Thread2TaskNum),
-		gEnv.profiler->getCount(ePe_Thread3TaskNum),
-		gEnv.profiler->getCount(ePe_Thread4TaskNum),
-		gEnv.profiler->getCount(ePe_Thread5TaskNum),
-		gEnv.profiler->getCount(ePe_Thread6TaskNum)
+		gEnv->profiler->getCount(ePe_MainThreadTaskNum),
+		gEnv->profiler->getCount(ePe_Thread0TaskNum),
+		gEnv->profiler->getCount(ePe_Thread1TaskNum),
+		gEnv->profiler->getCount(ePe_Thread2TaskNum),
+		gEnv->profiler->getCount(ePe_Thread3TaskNum),
+		gEnv->profiler->getCount(ePe_Thread4TaskNum),
+		gEnv->profiler->getCount(ePe_Thread5TaskNum),
+		gEnv->profiler->getCount(ePe_Thread6TaskNum)
 		);
-	gEnv.renderer->DrawScreenText( buffer, 20, 40, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( buffer, 20, 40, 1, SR_UICOLOR_NORMAL );
 
 	// profile resources
 

@@ -194,7 +194,7 @@ bool SrHwD3D9Renderer::Resize( uint32 width, uint32 height )
 void SrHwD3D9Renderer::BeginFrame()
 {
 	m_frameCount++;
-	gEnv.profiler->setBegin(ePe_FlushTime);
+	gEnv->profiler->setBegin(ePe_FlushTime);
 	m_hwDevice->BeginScene();
 
 
@@ -279,7 +279,7 @@ void SrHwD3D9Renderer::EndFrame()
 		m_gpuTimers[i].update();
 	}
 
-	gEnv.profiler->setEnd(ePe_FlushTime);
+	gEnv->profiler->setEnd(ePe_FlushTime);
 
 
 }
@@ -374,7 +374,7 @@ void SrHwD3D9Renderer::ClearTextureStage()
 bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 {
 	// dp time count
-	float time = gEnv.timer->getRealTime();
+	float time = gEnv->timer->getRealTime();
 
 
 	m_hwDevice->SetVertexShader(m_defaultVS);
@@ -392,9 +392,9 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 		campos.w = 0.01f;
 	}
 
-	float3 lightDir = gEnv.sceneMgr->m_lightList[0]->worldPos;
-	SrLight* light = gEnv.sceneMgr->m_lightList[0];
-	float4 amb = gEnv.sceneMgr->GetSkyLightColor();
+	float3 lightDir = gEnv->sceneMgr->m_lightList[0]->worldPos;
+	SrLight* light = gEnv->sceneMgr->m_lightList[0];
+	float4 amb = gEnv->sceneMgr->GetSkyLightColor();
 
 	m_hwDevice->SetPixelShaderConstantF(0, &(campos.x), 1 );
 	m_hwDevice->SetPixelShaderConstantF(1, &(lightDir.x), 1 );
@@ -443,9 +443,9 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 	m_hwDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, primitive->vb->elementCount, 0, primitive->ib->count / 3);
 
 
-	gEnv.profiler->setIncrement(ePe_BatchCount);
-	gEnv.profiler->setIncrement(ePe_TriangleCount, primitive->ib->count / 3);
-	gEnv.profiler->IncreaseTime(ePe_DrawCallTime, gEnv.timer->getRealTime() - time);
+	gEnv->profiler->setIncrement(ePe_BatchCount);
+	gEnv->profiler->setIncrement(ePe_TriangleCount, primitive->ib->count / 3);
+	gEnv->profiler->IncreaseTime(ePe_DrawCallTime, gEnv->timer->getRealTime() - time);
 
 	return true;
 }
@@ -601,4 +601,9 @@ bool SrHwD3D9Renderer::SetShader( const SrShader* shader )
 bool SrHwD3D9Renderer::SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count )
 {
 	return false;
+}
+
+uint32 SrHwD3D9Renderer::Tex2D( float2& texcoord, const SrTexture* texture ) const
+{
+	return 0;
 }

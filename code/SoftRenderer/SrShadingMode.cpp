@@ -1,22 +1,23 @@
 #include "StdAfx.h"
 #include "SrShadingMode.h"
-#include "shading.h"
 #include "SrRasterizer.h"
 
 #include "mmgr/mmgr.h"
+
+GlobalEnvironment* gEnv = NULL;\
+extern "C" __declspec(dllexport) void LoadShaders( GlobalEnvironment* pgEnv )
+{
+	gEnv = pgEnv;
+	gEnv->resourceMgr->AddShader(&g_FlatShadingShader);
+	gEnv->resourceMgr->AddShader(&g_PhongShadingShader);
+	gEnv->resourceMgr->AddShader(&g_GourandShadingShader);
+	gEnv->resourceMgr->AddShader(&g_PhongShadingWithNormalShader);
+}
 
 SrFlatShader g_FlatShadingShader;
 SrPhongShader g_PhongShadingShader;
 SrGourandShader g_GourandShadingShader;
 SrPhongWithNormalShader g_PhongShadingWithNormalShader;
-
-void LoadInternalShaders()
-{
-	gEnv.resourceMgr->AddShader(&g_FlatShadingShader);
-	gEnv.resourceMgr->AddShader(&g_PhongShadingShader);
-	gEnv.resourceMgr->AddShader(&g_GourandShadingShader);
-	gEnv.resourceMgr->AddShader(&g_PhongShadingWithNormalShader);
-}
 
 // local data format
 struct SrPhongShading_Vert2Frag
@@ -92,7 +93,7 @@ void SrFlatShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const vo
 	float3 viewWS = context->matrixs[eMd_ViewInverse].GetTranslate() - worldpos;
 	viewWS.normalize();
 	
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normal.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normal.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLights(context, worldpos, normal, viewWS, diffuseAcc, specularAcc);
@@ -178,7 +179,7 @@ void SrGourandShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const
 	viewWS.normalize();
 
 
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normal.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normal.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLights(context, worldpos, normal, viewWS, diffuseAcc, specularAcc);
@@ -313,7 +314,7 @@ void SrPhongShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderC
 	float3 viewWS = context->matrixs[eMd_ViewInverse].GetTranslate() - in->worldpos_tx.xyz;
 	viewWS.normalize();
 
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLights(context, in->worldpos_tx.xyz, normalDir, viewWS, diffuseAcc, specularAcc);
@@ -533,7 +534,7 @@ void SRFASTCALL SrPhongWithNormalShader::ProcessPixel( uint32* pOut, const void*
 	float3 viewWS = context->matrixs[eMd_ViewInverse].GetTranslate() - in->worldpos_tx.xyz;
 	viewWS.normalize();
 
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 	
 	// 光照计算
@@ -546,52 +547,52 @@ void SRFASTCALL SrPhongWithNormalShader::ProcessPixel( uint32* pOut, const void*
 	//address %= 16;
 	float ao = 0;
 
-	if ( ( (address - ((address / g_context->width) % 2)) % 2 != gEnv.renderer->getFrameCount() % 2) )
-	{
- 		int y = address / g_context->width;
- 		int x = address % g_context->width;
-		int address = x % 4 + (y % 4) * 4;
-		address %= 16;
-		// ao累积
-		
-
-		// fragment索引
-		SrFragment* fragment = (SrFragment*)pIn;
-
-		// 1.得到自己的纹理坐标
-		float2 hTc(in->pos.x / (float)g_context->width, in->pos.y / (float)g_context->height);
-
-			// 迭代八次，计算AO
-		for ( int i=0; i < 8; ++i)
-		{
-			float2 tc = g_kernel[i];
-			tc.reflect( tc, g_reflect[address]);
-			tc = (tc / (float)g_context->width) * 180 * (1- in->pos.z);
-			float3 worldposOther = fBuffer->GetWorldPos( hTc + tc );
-			float3 diff = worldposOther - in->worldpos_tx.xyz; 
-			float d = diff.length(); 
-			if (d < SR_EQUAL_PRECISION)
-			{
-				//ao += 1;
-				continue;
-			}
-			diff = diff / d;
-			d*= 0.3f;
-			ao += max(0.0f ,float3::dot(normalDir,diff) ) * ( 1.0 / (1.0 + d) ) * 4.f;
-		}
-
-		// 平均AO
-		ao *= 0.125f;
-
-		// 截断到0~1
-		ao = Clamp(ao, 0.f, 1.f);
-		//ao = 1.f - ao;
-		// 调和amb
-		diffuseAcc *= 1.f - ao;
-
-		ao -= 0.5f;
-		//diffuseAcc *= address / 16.f;
-	}
+// 	if ( ( (address - ((address / g_context->width) % 2)) % 2 != gEnv->renderer->getFrameCount() % 2) )
+// 	{
+//  		int y = address / g_context->width;
+//  		int x = address % g_context->width;
+// 		int address = x % 4 + (y % 4) * 4;
+// 		address %= 16;
+// 		// ao累积
+// 		
+// 
+// 		// fragment索引
+// 		SrFragment* fragment = (SrFragment*)pIn;
+// 
+// 		// 1.得到自己的纹理坐标
+// 		float2 hTc(in->pos.x / (float)g_context->width, in->pos.y / (float)g_context->height);
+// 
+// 			// 迭代八次，计算AO
+// 		for ( int i=0; i < 8; ++i)
+// 		{
+// 			float2 tc = g_kernel[i];
+// 			tc.reflect( tc, g_reflect[address]);
+// 			tc = (tc / (float)g_context->width) * 180 * (1- in->pos.z);
+// 			float3 worldposOther = fBuffer->GetWorldPos( hTc + tc );
+// 			float3 diff = worldposOther - in->worldpos_tx.xyz; 
+// 			float d = diff.length(); 
+// 			if (d < SR_EQUAL_PRECISION)
+// 			{
+// 				//ao += 1;
+// 				continue;
+// 			}
+// 			diff = diff / d;
+// 			d*= 0.3f;
+// 			ao += max(0.0f ,float3::dot(normalDir,diff) ) * ( 1.0 / (1.0 + d) ) * 4.f;
+// 		}
+// 
+// 		// 平均AO
+// 		ao *= 0.125f;
+// 
+// 		// 截断到0~1
+// 		ao = Clamp(ao, 0.f, 1.f);
+// 		//ao = 1.f - ao;
+// 		// 调和amb
+// 		diffuseAcc *= 1.f - ao;
+// 
+// 		ao -= 0.5f;
+// 		//diffuseAcc *= address / 16.f;
+// 	}
 
 	// 截断到0-1
 	diffuseAcc = diffuseAcc * matDiff * cBuffer->difColor;

@@ -10,9 +10,17 @@
 
 #include "stdafx.h"
 #include "SrCustomShader.h"
-#include "shading.h"
 
 #include "mmgr/mmgr.h"
+
+GlobalEnvironment* gEnv = NULL;\
+	extern "C" __declspec(dllexport) void LoadShaders( GlobalEnvironment* pgEnv )
+{
+	gEnv = pgEnv;
+	gEnv->resourceMgr->AddShader(&g_SkinSimShader);
+	gEnv->resourceMgr->AddShader(&g_FresnelNormalShader);
+	gEnv->resourceMgr->AddShader(&g_HairShader);
+}
 
 SrSkinSimShader g_SkinSimShader;
 SrFresnelNormalShader g_FresnelNormalShader;
@@ -27,13 +35,6 @@ struct SrFresnelNormal_Vert2Frag
 	float4 tangent;			// channel2:zw channel3:x
 	// full, cannot add any more
 };
-
-void LoadCustomShaders()
-{
-	gEnv.resourceMgr->AddShader(&g_SkinSimShader);
-	gEnv.resourceMgr->AddShader(&g_FresnelNormalShader);
-	gEnv.resourceMgr->AddShader(&g_HairShader);
-}
 
 void SrSkinSimShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
@@ -166,7 +167,7 @@ void SrSkinSimShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShade
 	float4 reflf = uint32_2_float4(refl);
 
 	// 取得全局天光，并利用normal作快速天光模拟
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	// 调用shading lib的皮肤光照计算函数，计算diffuse和specular的光照累积
@@ -318,7 +319,7 @@ void SrFresnelNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const S
 	float4 reflf = uint32_2_float4(refl) * 0.25f;
 
 
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLights(context, in->worldpos_tx.xyz, normalDir, viewWS, diffuseAcc, specularAcc);
@@ -403,7 +404,7 @@ void SRFASTCALL SrHairShader::ProcessPixel( uint32* pOut, const void* pIn, const
 	float3 viewWS = context->matrixs[eMd_ViewInverse].GetTranslate() - in->worldpos_tx.xyz;
 	viewWS.normalize();
 
-	float4 diffuseAcc = gEnv.sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLightsKajiya_Kay(context, in->worldpos_tx.xyz, normalDir, in->tangent.xyz, viewWS, diffuseAcc, specularAcc);

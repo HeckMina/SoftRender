@@ -54,7 +54,7 @@ void gkGpuTimer::update()
 	UINT64 endTime = 0;
 	UINT64 freq = 1;
 
-	if (gEnv.renderer->getFrameCount() % 2 == 0)
+	if (gEnv->renderer->getFrameCount() % 2 == 0)
 	{
 		if (!m_skip)
 		{

@@ -12,6 +12,7 @@
 #define SrRasterizer_h__
 
 #include "prerequisite.h"
+#include "SrShader.h"
 
 class SrRasTaskDispatcher;
 
@@ -75,7 +76,7 @@ SR_ALIGN struct SrRendPrimitve
 	SrVertexBuffer*		vb;					///< vertex buffer
 	SrIndexBuffer*		ib;
 	SrShaderContext		shaderConstants;
-	const SrShader*			shader;
+	const SrSwShader*			shader;
 };
 
 /**

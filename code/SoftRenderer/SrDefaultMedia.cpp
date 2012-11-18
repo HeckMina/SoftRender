@@ -76,8 +76,8 @@ static const char* g_defaultMaterial = "newmtl $srdefualt\n\
 SrDefaultMediaPack::SrDefaultMediaPack( void )
 {
 	// 程序顺序保证这里能够 得到 resourcemanager
-	defaultDiffuse = gEnv.resourceMgr->CreateRenderTexture("$default_d", 4, 4, 4);
-	defaultFlat = gEnv.resourceMgr->CreateRenderTexture("$default_n", 4, 4, 4);
+	defaultDiffuse = gEnv->resourceMgr->CreateRenderTexture("$default_d", 4, 4, 4);
+	defaultFlat = gEnv->resourceMgr->CreateRenderTexture("$default_n", 4, 4, 4);
 
 	// 写render texture
 	uint32* buffer = NULL;

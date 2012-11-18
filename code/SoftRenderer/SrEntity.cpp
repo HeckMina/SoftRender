@@ -85,13 +85,13 @@ void SrEntity::Draw()
 
 void SrEntity::CreateMesh( const char* filename )
 {
-	m_mesh = gEnv.resourceMgr->LoadMesh(filename);
+	m_mesh = gEnv->resourceMgr->LoadMesh(filename);
 }
 
 void SrEntity::LoadMaterial( const char* filename )
 {
 	// hacking load internal
-	gEnv.resourceMgr->LoadMaterialLib(filename);
+	gEnv->resourceMgr->LoadMaterialLib(filename);
 }
 
 SrMaterial* SrEntity::getMaterial( uint32 index )

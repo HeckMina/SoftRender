@@ -202,11 +202,8 @@
     <ClInclude Include="SrSoftRenderer.h">
       <Filter>RenderSys\SoftwareRenderer</Filter>
     </ClInclude>
-    <ClInclude Include="SrCustomShader.h">
-      <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
-    </ClInclude>
-    <ClInclude Include="SrShadingMode.h">
-      <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
+    <ClInclude Include="SrShader.h">
+      <Filter>RenderSys\Resource</Filter>
     </ClInclude>
     <ClInclude Include="shading.h">
       <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
@@ -314,12 +311,6 @@
     </ClCompile>
     <ClCompile Include="SrSoftRenderer.cpp">
       <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrCustomShader.cpp">
-      <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
-    </ClCompile>
-    <ClCompile Include="SrShadingMode.cpp">
-      <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -41,7 +41,7 @@ int SrTaskThread::Run()
 				break;
 			}
 
-			gEnv.profiler->setIncrement( (EProfilerElement)(ePe_Thread0TaskNum + m_threadId) );
+			gEnv->profiler->setIncrement( (EProfilerElement)(ePe_Thread0TaskNum + m_threadId) );
 			// 执行任务
 			task->Execute();
 		}
@@ -144,7 +144,7 @@ void SrRasTaskDispatcher::FlushCoop()
 			// 没有任务了，退出线程
 			break;
 		}
-		gEnv.profiler->setIncrement(ePe_MainThreadTaskNum);
+		gEnv->profiler->setIncrement(ePe_MainThreadTaskNum);
 
 		// 执行任务
 		task->Execute();

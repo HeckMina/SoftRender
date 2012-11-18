@@ -30,7 +30,7 @@ void SrMesh::Draw()
 		{
 			
 			// set shader to renderer
-			gEnv.renderer->SetShader(mat->m_shader);
+			gEnv->renderer->SetShader(mat->m_shader);
 
 			// apply texture to renderer
 			mat->ApplyTextures();
@@ -38,7 +38,7 @@ void SrMesh::Draw()
 			// set shaderConstants
 			mat->ApplyShaderConstants();
 
-			gEnv.renderer->DrawPrimitive( &(m_primitives[i]) );
+			gEnv->renderer->DrawPrimitive( &(m_primitives[i]) );
 		}		
 	}
 }
@@ -71,7 +71,7 @@ void SrMesh::ParseObjFile()
 		MessageBox(NULL, msg, "SrResourceManager", MB_OK );
 
 
-		loader.LoadGeometryFromOBJ( gEnv.resourceMgr->getDefaultMediaPack()->getDefaultMesh(), m_primitives );
+		loader.LoadGeometryFromOBJ( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMesh(), m_primitives );
 	}
 	
 
@@ -82,8 +82,8 @@ void SrMesh::Destroy()
 {
 	for (uint32 i=0; i < m_primitives.size(); ++i)
 	{
-		gEnv.renderer->DeleteVertexBuffer( m_primitives[i].vb );
-		gEnv.renderer->DeleteIndexBuffer( m_primitives[i].ib );
+		gEnv->renderer->DeleteVertexBuffer( m_primitives[i].vb );
+		gEnv->renderer->DeleteIndexBuffer( m_primitives[i].ib );
 	}
 
 	m_primitives.clear();

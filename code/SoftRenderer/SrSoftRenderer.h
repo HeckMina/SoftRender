@@ -52,6 +52,8 @@ public:
 	virtual bool SetShader( const SrShader* shader );
 	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count );
 
+	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
+
 private:
 	// ½»»»Ó²¼þÖ¡»º³å
 	bool Swap();
@@ -61,6 +63,8 @@ private:
 	void FlushText();
 
 	virtual SrVertexBuffer* AllocateNormalizedVertexBuffer( uint32 count, bool fastmode = false );
+
+	
 
 
 
@@ -87,7 +91,7 @@ private:
 	uint32 m_normalizeVBAllocSize;
 	SrVertexBufferArray m_normlizedVBs;
 
-	const SrShader* m_currShader;
+	const SrSwShader* m_currShader;
 	float4* m_shaderConstants;
 };
 

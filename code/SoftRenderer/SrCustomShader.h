@@ -12,12 +12,12 @@
 #define SrCustomShader_h__
 
 #include "prerequisite.h"
-#include "SrShadingMode.h"
+#include "shading.h"
 
-class SrSkinSimShader : public SrShader
+class SrSkinSimShader : public SrSwShader
 {
 public:
-	SrSkinSimShader():SrShader("SkinSimShader") {}
+	SrSkinSimShader():SrSwShader("SkinSimShader") {}
 	~SrSkinSimShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -28,10 +28,10 @@ public:
 
 extern SrSkinSimShader g_SkinSimShader;
 
-class SrFresnelNormalShader : public SrShader
+class SrFresnelNormalShader : public SrSwShader
 {
 public:
-	SrFresnelNormalShader():SrShader("FresnelWithNormalShader") {}
+	SrFresnelNormalShader():SrSwShader("FresnelWithNormalShader") {}
 	~SrFresnelNormalShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -42,10 +42,10 @@ public:
 
 extern SrFresnelNormalShader g_FresnelNormalShader;
 
-class SrHairShader : public SrShader
+class SrHairShader : public SrSwShader
 {
 public:
-	SrHairShader():SrShader("HairShader") {}
+	SrHairShader():SrSwShader("HairShader") {}
 	~SrHairShader() {}
 
 	virtual void SRFASTCALL ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;

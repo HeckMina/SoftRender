@@ -324,7 +324,16 @@ SrVertexBuffer* SrSoftRenderer::AllocateNormalizedVertexBuffer( uint32 count, bo
 
 bool SrSoftRenderer::SetShader( const SrShader* shader )
 {
-	m_currShader = shader;
+	if (shader->getType() == eRT_SwShader)
+	{
+		m_currShader = static_cast<const SrSwShader*>(shader);
+	}
+	else
+	{
+		assert(0);
+		m_currShader = NULL;
+	}
+	
 	return true;
 }
 
@@ -332,4 +341,22 @@ bool SrSoftRenderer::SetShaderConstant( EShaderConstantsSlot slot, const float* 
 {
 	memcpy( &(m_shaderConstants[slot]), constantStart, vec4Count * sizeof(float4) );
 	return true;
+}
+
+uint32 SrSoftRenderer::Tex2D( float2& texcoord, const SrTexture* texture  ) const
+{
+	uint32 ret = 0x00000000;
+	if (texture)
+	{
+		if (g_context->IsFeatureEnable(eRFeature_LinearFiltering))
+		{
+			ret = texture->Get( texcoord, eSF_Linear );
+		}
+		else
+		{
+			ret = texture->Get( texcoord, eSF_Nearest );
+		}
+	}	
+
+	return ret;
 }

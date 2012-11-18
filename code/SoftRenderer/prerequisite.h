@@ -87,9 +87,14 @@ struct SrRendPrimitve;
 class SrProfiler;
 struct SrShaderContext;
 struct SrMaterial;
-class SrResourceManager;
+class IResourceManager;
 class SrTexture;
 class SrScene;
+class SrSwShader;
+class SrResource;
+class SrMesh;
+class SrShader;
+class SrDefaultMediaPack;
 
 //////////////////////////////////////////////////////////////////////////
 // 全局环境
@@ -103,10 +108,10 @@ struct GlobalEnvironment
 	SrTimer*				timer;
 	SrInputManager*			inputSys;
 	SrProfiler*				profiler;
-	SrResourceManager*		resourceMgr;
+	IResourceManager*		resourceMgr;
 	SrScene*				sceneMgr;
 };
-extern GlobalEnvironment gEnv;
+extern GlobalEnvironment* gEnv;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,7 +196,8 @@ enum EResourceType
 	eRt_Mesh = 0,
 	eRT_Texture,
 	eRT_Material,
-	eRT_Shader,
+	eRT_SwShader,
+	eRT_HwShader,
 
 	eRT_Count,
 };
@@ -401,34 +407,32 @@ typedef std::vector<float44> SrMatrixArray;						///< 矩阵队列
 typedef std::vector<const SrTexture*> SrBitmapArray;			///< 纹理访问队列
 
 /**
- *@brief Shader上下文结构，用于缓存Flush用的每一个primitive的渲染数据
- */
-SR_ALIGN struct SrShaderContext
-{
-	float4		  shaderConstants[eSC_ShaderConstantCount];
-	SrMatrixArray matrixs;
-	SrBitmapArray textureStage;
-	SrLightList	  lightList;	
-	bool		  alphaTest;
-	bool		  culling;
-
-	const void* GetPixelShaderConstantPtr() const
-	{
-		return &(shaderConstants[eSC_PS0]);
-	}
-
-	uint32 Tex2D(float2& texcoord, uint32 stage) const;
-};
-
-/**
  *@brief 通用Constant Buffer
  *@remark cBuffer最大只支持8个float4, 即32个浮点数，定义的时候注意大小。
  */
-SR_ALIGN struct SrPixelShader_Constants
+struct SrPixelShader_Constants
 {
 	float4 difColor;
 	float4 spcColor;
 	float glossness; float fresnelPower; float fresnelBia; float fresnelScale;
+};
+
+struct IResourceManager
+{
+	virtual SrMesh*				LoadMesh(const char* filename) =0;
+	virtual const SrTexture*	LoadTexture(const char* filename, bool bump = false) =0;
+	virtual SrMaterial*			LoadMaterial(const char* filename) =0;
+	virtual SrMaterial*			CreateMaterial(const char* filename) =0;
+	virtual void				LoadMaterialLib(const char* filename) =0;
+	virtual SrShader*			GetShader(const char* name) =0;
+	virtual void				AddShader(SrShader* shader) =0;
+	virtual void				ReloadShaders() =0;
+
+	virtual SrTexture*			CreateRenderTexture(const char* name, int width, int height, int bpp) =0;
+	virtual SrMaterial*			CreateManmualMaterial(const char* name) =0;
+
+	virtual void				InitDefaultMedia() =0;
+	virtual SrDefaultMediaPack*	getDefaultMediaPack() =0;
 };
 
 #endif // prerequisite_h__

@@ -24,7 +24,7 @@ void SrSponzaApp::OnInit()
 
 	// 创建场景
 	m_scene = new SrScene;
-	gEnv.sceneMgr = m_scene;
+	gEnv->sceneMgr = m_scene;
 
 	// 创建SPONZA
 	m_ent = m_scene->CreateEntity("model1", "media\\sponza.obj", "media\\sponza.mtl");
@@ -38,14 +38,14 @@ void SrSponzaApp::OnInit()
 	m_scene->PushCamera(m_camera);
 
 	// 添加一个主光
-	SrLight* lt = gEnv.sceneMgr->AddLight();
+	SrLight* lt = gEnv->sceneMgr->AddLight();
 	lt->diffuseColor = SR_ARGB_F( 255, 255, 239, 216 ) * 2.0f;
 	lt->specularColor = SR_ARGB_F( 255, 255, 239, 216 );
 	lt->worldPos = float3( 1000.f, 1000.f, -1000.f);
 	lt->radius = 100.f;
 
 	// 添加输入设备回调
-	gEnv.inputSys->AddListener(this);
+	gEnv->inputSys->AddListener(this);
 }
 
 void SrSponzaApp::OnUpdate()
@@ -70,21 +70,21 @@ void SrSponzaApp::OnUpdate()
 	int startxL = 70;
 	int starty = 4 * g_context->height / 5;
 
-	gEnv.renderer->DrawScreenText( "[Press P]", keyL, starty, 1, SR_UICOLOR_MAIN);
+	gEnv->renderer->DrawScreenText( "[Press P]", keyL, starty, 1, SR_UICOLOR_MAIN);
 	sprintf_s( buffer, "SSAO: %s", m_ssao ? "on" : "off" );
-	gEnv.renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
 
-	gEnv.renderer->DrawScreenText( "[Press K]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
+	gEnv->renderer->DrawScreenText( "[Press K]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
 	sprintf_s( buffer, "DotCoverage: %s", g_context->IsFeatureEnable(eRFeature_DotCoverageRendering) ? "on" : "off" );
-	gEnv.renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
 
-	gEnv.renderer->DrawScreenText( "[Press ~]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
-	sprintf_s( buffer, "Renderer: %s", gEnv.renderer->m_rendererType == eRt_HardwareD3D9 ? "Hw_D3D9" : "Software" );
-	gEnv.renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( "[Press ~]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
+	sprintf_s( buffer, "Renderer: %s", gEnv->renderer->m_rendererType == eRt_HardwareD3D9 ? "Hw_D3D9" : "Software" );
+	gEnv->renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
 
-	gEnv.renderer->DrawScreenText( "[CamCtrl]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
+	gEnv->renderer->DrawScreenText( "[CamCtrl]", keyL, starty += 10, 1, SR_UICOLOR_MAIN);
 	sprintf_s( buffer, "WASD Move Cam | Mouse L+Drag Rotate Cam" );
-	gEnv.renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
+	gEnv->renderer->DrawScreenText( buffer, startxL, starty, 1, SR_UICOLOR_NORMAL );
 }
 
 void SrSponzaApp::OnDestroy()
@@ -144,7 +144,7 @@ bool SrSponzaApp::OnInputEvent( const SInputEvent &event )
 		{
 			if (event.state == eIS_Down)
 			{
-				m_camera->Move( float3(0,0,speed) * gEnv.timer->getElapsedTime() );
+				m_camera->Move( float3(0,0,speed) * gEnv->timer->getElapsedTime() );
 			}			
 		}
 		break;
@@ -152,7 +152,7 @@ bool SrSponzaApp::OnInputEvent( const SInputEvent &event )
 		{
 			if (event.state == eIS_Down)
 			{
-				m_camera->Move( float3(0,0,-speed) * gEnv.timer->getElapsedTime() );
+				m_camera->Move( float3(0,0,-speed) * gEnv->timer->getElapsedTime() );
 			}			
 		}
 		break;
@@ -160,7 +160,7 @@ bool SrSponzaApp::OnInputEvent( const SInputEvent &event )
 		{
 			if (event.state == eIS_Down)
 			{
-				m_camera->Move( float3(-speed,0,0) * gEnv.timer->getElapsedTime() );
+				m_camera->Move( float3(-speed,0,0) * gEnv->timer->getElapsedTime() );
 			}			
 		}
 		break;
@@ -168,7 +168,7 @@ bool SrSponzaApp::OnInputEvent( const SInputEvent &event )
 		{
 			if (event.state == eIS_Down)
 			{
-				m_camera->Move( float3(speed,0,0) * gEnv.timer->getElapsedTime() );
+				m_camera->Move( float3(speed,0,0) * gEnv->timer->getElapsedTime() );
 			}			
 		}
 		break;
@@ -266,7 +266,7 @@ void SrSponzaApp::SwitchSSAO()
 		m_ssao = false;
 		for (uint32 i=0; i < m_ent->getMaterialCount(); ++i)
 		{
-			m_ent->getMaterial(i)->SetShader(gEnv.resourceMgr->GetShader("PhongShader"));
+			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
 		}
 	}
 	else
@@ -274,7 +274,7 @@ void SrSponzaApp::SwitchSSAO()
 		m_ssao = true;
 		for (uint32 i=0; i < m_ent->getMaterialCount(); ++i)
 		{
-			m_ent->getMaterial(i)->SetShader(gEnv.resourceMgr->GetShader("PhongWithNormalMapShader"));
+			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("PhongWithNormalMapShader"));
 		}
 	}
 

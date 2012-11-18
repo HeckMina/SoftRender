@@ -21,26 +21,6 @@
 
 SrFragmentBuffer* fBuffer = NULL;						/// fragment Buffer
 
-// shader context
-uint32 SrShaderContext::Tex2D(float2& texcoord, uint32 stage) const
-{
-	uint32 ret = 0x00000000;
-
-	if (stage < textureStage.size() && textureStage[stage] != 0)
-	{
-		if (g_context->IsFeatureEnable(eRFeature_LinearFiltering))
-		{
-			ret = (textureStage[stage])->Get( texcoord, eSF_Linear );
-		}
-		else
-		{
-			ret = (textureStage[stage])->Get( texcoord, eSF_Nearest );
-		}		
-	}
-	return ret;
-}
-
-
 SrRasterizer::SrRasterizer(void)
 {	
 	m_MemSBuffer = NULL;
@@ -55,8 +35,8 @@ void SrRasterizer::Init(SrSoftRenderer* renderer)
 {
 	fBuffer = new SrFragmentBuffer(g_context->width, g_context->height, renderer);
 
-	m_MemSBuffer = gEnv.resourceMgr->CreateRenderTexture( "$MemoryScreenBuffer" ,g_context->width, g_context->height, 4 );
-	m_BackSBuffer = gEnv.resourceMgr->CreateRenderTexture( "$BackupScreenBuffer" ,g_context->width, g_context->height, 4 );
+	m_MemSBuffer = gEnv->resourceMgr->CreateRenderTexture( "$MemoryScreenBuffer" ,g_context->width, g_context->height, 4 );
+	m_BackSBuffer = gEnv->resourceMgr->CreateRenderTexture( "$BackupScreenBuffer" ,g_context->width, g_context->height, 4 );
 
 	m_rasTaskDispatcher = new SrRasTaskDispatcher;
 	m_rasTaskDispatcher->Init();
@@ -86,22 +66,22 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 		return false;
 	}
 
-	float start = gEnv.timer->getRealTime();
+	float start = gEnv->timer->getRealTime();
 
 	// 申请渲染primitive
 	SrRendPrimitve transformed;
 
 	// vb,ib申请
-	float start1 = gEnv.timer->getRealTime();	
+	float start1 = gEnv->timer->getRealTime();	
 	transformed.vb = m_renderer->AllocateNormalizedVertexBuffer(primitive->vb->elementCount, true);
 	transformed.ib = primitive->ib;
-	gEnv.profiler->IncreaseTime(ePe_DrawCallAllocTime, gEnv.timer->getRealTime() - start1);
+	gEnv->profiler->IncreaseTime(ePe_DrawCallAllocTime, gEnv->timer->getRealTime() - start1);
 
 	// if recreate cached vb
 	// Create Cached Vb
 	if (!primitive->cachedVb)
 	{
-		SrVertexBuffer* cacheVB = gEnv.renderer->AllocateNormalizedVertexBuffer( primitive->vb->elementCount );
+		SrVertexBuffer* cacheVB = gEnv->renderer->AllocateNormalizedVertexBuffer( primitive->vb->elementCount );
 		if (cacheVB)
 		{
 			// 填充渲染primitive
@@ -128,7 +108,7 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 	transformed.shader = m_renderer->m_currShader;
 	transformed.shaderConstants.matrixs = m_renderer->m_matrixStack; // matrixStack缓存
 	transformed.shaderConstants.textureStage = m_renderer->m_textureStages; // 纹理stage缓存
-	transformed.shaderConstants.lightList =gEnv.sceneMgr->m_lightList; // lightList缓存
+	transformed.shaderConstants.lightList =gEnv->sceneMgr->m_lightList; // lightList缓存
 	memcpy( transformed.shaderConstants.shaderConstants, m_renderer->m_shaderConstants, eSC_ShaderConstantCount * sizeof(float4) );
 	transformed.shaderConstants.alphaTest = primitive->material->m_alphaTest;
 	transformed.shaderConstants.culling = true;
@@ -136,7 +116,7 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 	// 提交渲染primitive
 	m_rendPrimitives.push_back( transformed );
 	
-	gEnv.profiler->IncreaseTime(ePe_DrawCallTime, gEnv.timer->getRealTime() - start);
+	gEnv->profiler->IncreaseTime(ePe_DrawCallTime, gEnv->timer->getRealTime() - start);
 
 	return true;
 }
@@ -155,8 +135,8 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
  */
 void SrRasterizer::Flush()
 {
-	gEnv.profiler->setBegin(ePe_FlushTime);
-	gEnv.profiler->setBegin(ePe_ClearTime);
+	gEnv->profiler->setBegin(ePe_FlushTime);
+	gEnv->profiler->setBegin(ePe_ClearTime);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 0. Clear操作
@@ -216,13 +196,13 @@ void SrRasterizer::Flush()
 		// 清空fragBuffer
 		memset(fragBuffer, 0, sizeof(SrFragment) * size);
 	}
-	gEnv.profiler->setEnd(ePe_ClearTime);
+	gEnv->profiler->setEnd(ePe_ClearTime);
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// 顶点处理
 	// every vertex -> sshader -> every vertex
-	gEnv.profiler->setBegin(ePe_VertexShaderTime);
+	gEnv->profiler->setBegin(ePe_VertexShaderTime);
 	
 	// 填充任务队列
 	for ( uint32 i = 0; i < m_rendPrimitives.size(); ++i)
@@ -238,7 +218,7 @@ void SrRasterizer::Flush()
 				end = primitive.vb->elementCount;
 			}
 			m_rasTaskDispatcher->PushTask( new SrRasTask_Vertex(i, end, primitive.vb, &primitive) );
-			gEnv.profiler->setIncrement(ePe_VertexCount, end - i);
+			gEnv->profiler->setIncrement(ePe_VertexCount, end - i);
 		}
  	}
 
@@ -246,7 +226,7 @@ void SrRasterizer::Flush()
 	m_rasTaskDispatcher->FlushCoop();
 	m_rasTaskDispatcher->Wait();
 
-	gEnv.profiler->setEnd(ePe_VertexShaderTime);
+	gEnv->profiler->setEnd(ePe_VertexShaderTime);
 	// 顶点处理结束
 	//////////////////////////////////////////////////////////////////////////
 
@@ -254,17 +234,17 @@ void SrRasterizer::Flush()
 	//////////////////////////////////////////////////////////////////////////
 	// 光栅化
 	// all vertex -> rasterization -> gbuffer
-	gEnv.profiler->setBegin(ePe_RasterizeShaderTime);
+	gEnv->profiler->setBegin(ePe_RasterizeShaderTime);
 #if 0
 	for ( uint32 i = 0; i < m_rendPrimitives.size(); ++i)
 	{
-		gEnv.profiler->setIncrement(ePe_BatchCount);
+		gEnv->profiler->setIncrement(ePe_BatchCount);
 		ProcessRasterizer( &(m_rendPrimitives[i]), g_context->GetFragBuffer() );
 	}
 #else
 	for ( uint32 i = 0; i < m_rendPrimitives.size(); ++i)
 	{
-		gEnv.profiler->setIncrement(ePe_BatchCount);
+		gEnv->profiler->setIncrement(ePe_BatchCount);
 
 		SrVertexBuffer* vb = m_rendPrimitives[i].vb;
 		SrIndexBuffer* ib = m_rendPrimitives[i].ib;
@@ -287,7 +267,7 @@ void SrRasterizer::Flush()
 
 	for ( uint32 i = 0; i < m_rendPrimitivesRHZ.size(); ++i)
 	{
-		gEnv.profiler->setIncrement(ePe_BatchCount);
+		gEnv->profiler->setIncrement(ePe_BatchCount);
 
 		SrVertexBuffer* vb = m_rendPrimitivesRHZ[i].vb;
 		SrIndexBuffer* ib = m_rendPrimitivesRHZ[i].ib;
@@ -314,14 +294,14 @@ void SrRasterizer::Flush()
 	m_rasTaskDispatcher->FlushCoop();
 	m_rasTaskDispatcher->Wait();
 #endif
-	gEnv.profiler->setEnd(ePe_RasterizeShaderTime);
+	gEnv->profiler->setEnd(ePe_RasterizeShaderTime);
 	// 光栅化结束
 	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
 	// 像素处理
 	// every gbuffer pixel -> pshader -> every screenbuffer pixel	
-	gEnv.profiler->setBegin(ePe_PixelShaderTime);
+	gEnv->profiler->setBegin(ePe_PixelShaderTime);
 
 	// 任务统计
 	for ( uint32 i=0; i < g_context->width * g_context->height; ++i)
@@ -343,13 +323,13 @@ void SrRasterizer::Flush()
 			end = size;
 		}
 		m_rasTaskDispatcher->PushTask( new SrRasTask_Pixel( i, end, fBuffer->GetPixelIndicesBuffer()->data, fBuffer->fBuffer, outBuffer ) );
-		gEnv.profiler->setIncrement(ePe_PixelCount, end - i);
+		gEnv->profiler->setIncrement(ePe_PixelCount, end - i);
 	}
 
 	// 执行任务队列
 	m_rasTaskDispatcher->FlushCoop();
 	m_rasTaskDispatcher->Wait();
-	gEnv.profiler->setEnd(ePe_PixelShaderTime);
+	gEnv->profiler->setEnd(ePe_PixelShaderTime);
 	// 像素处理结束
 	//////////////////////////////////////////////////////////////////////////
 
@@ -357,8 +337,8 @@ void SrRasterizer::Flush()
 	// line helper draw
 	for (uint32 i=0; i < m_rendDynamicVertex.size(); i+=2)
 	{
-		float4 line0 = gEnv.renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i];
-		float4 line1 = gEnv.renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i+1];
+		float4 line0 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i];
+		float4 line1 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i+1];
 		
 		// trans to screen space
 		if (line0.w < .5f)
@@ -385,7 +365,7 @@ void SrRasterizer::Flush()
 
 	//////////////////////////////////////////////////////////////////////////
 	// 后期处理
-	gEnv.profiler->setBegin(ePe_PostProcessTime);
+	gEnv->profiler->setBegin(ePe_PostProcessTime);
 
 	// SSAO
 
@@ -420,8 +400,8 @@ void SrRasterizer::Flush()
 	m_rendDynamicVertex.clear();
 
 	//////////////////////////////////////////////////////////////////////////
-	gEnv.profiler->setEnd(ePe_PostProcessTime);
-	gEnv.profiler->setEnd(ePe_FlushTime);
+	gEnv->profiler->setEnd(ePe_PostProcessTime);
+	gEnv->profiler->setEnd(ePe_FlushTime);
 }
 
 /**
@@ -469,7 +449,7 @@ bool SrRasterizer::DrawRHZPrimitive( SrRendPrimitve& rendPrimitive )
 	// 填充shaderConstants
 // 	rendPrimitive.shaderConstants.matrixs = m_renderer->m_matrixStack; // matrixStack缓存
 // 	rendPrimitive.shaderConstants.textureStage = m_renderer->m_textureStages; // 纹理stage缓存
-// 	rendPrimitive.shaderConstants.lightList = gEnv.sceneMgr->m_lightList; // lightList缓存
+// 	rendPrimitive.shaderConstants.lightList = gEnv->sceneMgr->m_lightList; // lightList缓存
 // 	rendPrimitive.shaderConstants.cBuffer = rendPrimitive.material->m_cbuffer; // 材质的cBuffer缓存
 // 	rendPrimitive.shaderConstants.alphaTest = true;
 // 	rendPrimitive.shaderConstants.culling = false;

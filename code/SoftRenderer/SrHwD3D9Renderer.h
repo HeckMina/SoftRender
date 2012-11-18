@@ -69,6 +69,8 @@ private:
 
 	virtual float GetGpuTime( EHwTimerElement element );
 
+	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
+
 
 
 	class SrHwTextFlusher* m_textFlusher;

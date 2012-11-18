@@ -184,7 +184,7 @@ bool SrObjLoader::LoadGeometryFromOBJ( const char* pMeshData, SrPrimitives& prim
 				// CreateMesh
 				CreateMeshInternal(primitives);
 
-				primitives.back().material = gEnv.resourceMgr->LoadMaterial(currMtlName.c_str());				
+				primitives.back().material = gEnv->resourceMgr->LoadMaterial(currMtlName.c_str());				
 			}
 			// Vertex Position
 			float x, y, z;
@@ -269,7 +269,7 @@ bool SrObjLoader::LoadGeometryFromOBJ( const char* pMeshData, SrPrimitives& prim
 
 		// CreateMesh
 		CreateMeshInternal(primitives);
-		primitives.back().material = gEnv.resourceMgr->LoadMaterial(currMtlName.c_str());				
+		primitives.back().material = gEnv->resourceMgr->LoadMaterial(currMtlName.c_str());				
 	}
 	
 	return S_OK;
@@ -290,14 +290,14 @@ void SrObjLoader::CreateMeshInternal(SrPrimitives& primitives )
 	m_bIsLoaded = true;
 
 	// Create Mesh
-	SrVertexBuffer* vb = gEnv.renderer->AllocateVertexBuffer( sizeof(SrVertexP3N3T2), m_Vertices.size() );
-	SrIndexBuffer* ib = gEnv.renderer->AllocateIndexBuffer( m_Indices.size() );
+	SrVertexBuffer* vb = gEnv->renderer->AllocateVertexBuffer( sizeof(SrVertexP3N3T2), m_Vertices.size() );
+	SrIndexBuffer* ib = gEnv->renderer->AllocateIndexBuffer( m_Indices.size() );
 
 	memcpy( vb->data, m_Vertices.data(), sizeof(SrVertexP3N3T2) * m_Vertices.size() );
 	memcpy( ib->data, m_Indices.data(), sizeof(uint32) * m_Indices.size() );
 
-	gEnv.renderer->UpdateVertexBuffer(vb);
-	gEnv.renderer->UpdateIndexBuffer(ib);
+	gEnv->renderer->UpdateVertexBuffer(vb);
+	gEnv->renderer->UpdateIndexBuffer(ib);
 
 	SrPrimitve primitive;
 	primitive.vb = vb;
@@ -346,7 +346,7 @@ struct SrMatLoadingParam
 		if (mtlname != "")
 		{
 			// create mtl
-			SrMaterial* matptr = gEnv.resourceMgr->CreateMaterial(mtlname.c_str());
+			SrMaterial* matptr = gEnv->resourceMgr->CreateMaterial(mtlname.c_str());
 			SrMaterial& mat = *matptr;
 
 			mtlname = "";
@@ -363,43 +363,43 @@ struct SrMatLoadingParam
 			// texture
 			if ( !Kd_map.empty())
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kd_map.c_str()));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(Kd_map.c_str()));
 			}
 			else
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture("$default_d"));
 			}
 
 			if ( !Kb_map.empty())
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kb_map.c_str(), true));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(Kb_map.c_str(), true));
 			}
 			else
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_n", true));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture("$default_n", true));
 			}
 
 			if ( !Ks_map.empty())
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Ks_map.c_str()));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(Ks_map.c_str()));
 			}
 			else
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture("$default_d"));
 			}
 
 			if ( !Kr_map.empty())
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kr_map.c_str()));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(Kr_map.c_str()));
 			}
 			else
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture("$default_d"));
 			}
 
 			if ( !kspc0_map.empty())
 			{
-				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(kspc0_map.c_str()));
+				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(kspc0_map.c_str()));
 			}
 
 			// clear

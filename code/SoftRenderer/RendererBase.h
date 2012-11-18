@@ -102,6 +102,10 @@ public:
 	void SetMatrix( EMatrixDefine index, const float44& matrix);
 	float44 GetMatrix( EMatrixDefine index );
 
+	// TEX2D for swRenderer
+	virtual uint32 Tex2D(float2& texcoord, const SrTexture* texture ) const =0;
+
+
 	// FrameCount
 	uint32 getFrameCount() {return m_frameCount;}
 

@@ -157,7 +157,7 @@ void SrScene::Update()
 	{
 		if (it->second)
 		{
-			it->second->Update(gEnv.timer->getElapsedTime());
+			it->second->Update(gEnv->timer->getElapsedTime());
 		}
 	}
 
@@ -180,9 +180,9 @@ void SrScene::RenderVisbility( SrCamera* cam )
 	{
 		if (it->second)
 		{
-			gEnv.renderer->SetMatrix(eMd_WorldViewProj, it->second->getWorldMatrix() * cam->getViewProjMatrix() );
-			gEnv.renderer->SetMatrix(eMd_World, it->second->getWorldMatrix() );
-			gEnv.renderer->SetMatrix(eMd_ViewInverse, cam->getViewMatrix().GetInverse());
+			gEnv->renderer->SetMatrix(eMd_WorldViewProj, it->second->getWorldMatrix() * cam->getViewProjMatrix() );
+			gEnv->renderer->SetMatrix(eMd_World, it->second->getWorldMatrix() );
+			gEnv->renderer->SetMatrix(eMd_ViewInverse, cam->getViewMatrix().GetInverse());
 			it->second->Draw();
 		}
 	}

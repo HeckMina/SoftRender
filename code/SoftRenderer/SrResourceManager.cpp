@@ -236,6 +236,61 @@ void SrResourceManager::LoadMaterialLib( const char* filename )
 // 		sprintf_s(msg, "文件[ %s ]未找到！使用默认资源。", realname.c_str());
 // 		MessageBox(NULL, msg, "SrResourceManager", MB_OK );
 // 
-// 		loader.LoadMaterialFromMTL( gEnv.resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
+// 		loader.LoadMaterialFromMTL( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
+	}
+}
+
+typedef void (*fnLoadShaders)(GlobalEnvironment* pgEnv);
+
+void SrResourceManager::ReloadShaders()
+{
+	// unload
+	for (uint32 i=0; i < m_handles.size(); ++i)
+	{
+		FreeLibrary( m_handles[i] );
+	}
+	
+	if ( gEnv->renderer->m_rendererType == eRt_Software )
+	{
+		// 读取外挂命令插件
+		std::string dir = "\\media\\shader\\";
+		std::string path = "\\media\\shader\\*.ssl";
+		getMediaPath(dir);
+		getMediaPath(path);
+
+		WIN32_FIND_DATAA fd;
+		HANDLE hff = FindFirstFileA(path.c_str(), &fd);
+		BOOL bIsFind = TRUE;
+
+		while(hff && bIsFind)
+		{
+			if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
+			{
+				// do not get into
+			}
+			else
+			{
+				std::string fullpath = dir + fd.cFileName;
+
+				// load dll shaders
+				HMODULE hDllHandle = 0;
+				hDllHandle = LoadLibraryA( fullpath.c_str() );
+				if (hDllHandle)
+				{
+
+					fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
+
+					fn( gEnv );
+					m_handles.push_back(hDllHandle);
+				}		
+			}
+			bIsFind = FindNextFileA(hff, &fd);
+		}
+
+
+	}
+	else
+	{
+
 	}
 }

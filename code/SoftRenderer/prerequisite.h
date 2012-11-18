@@ -63,7 +63,7 @@
 #define SR_MAX_TEXTURE_STAGE_NUM 128
 #define FBUFFER_CHANNEL_SIZE 4
 #define SR_GREYSCALE_CLEARCOLOR 0x0
-#define SR_SHADER_CONSTANTS_NUM 64
+#define SR_SHADER_CONSTANTS_NUM 192
 
 // 软件光栅化分块策略
 // 此block大小决定了每次线程TASK分发的task个数
@@ -419,6 +419,8 @@ struct SrPixelShader_Constants
 
 struct IResourceManager
 {
+	virtual ~IResourceManager(void) {}
+
 	virtual SrMesh*				LoadMesh(const char* filename) =0;
 	virtual const SrTexture*	LoadTexture(const char* filename, bool bump = false) =0;
 	virtual SrMaterial*			LoadMaterial(const char* filename) =0;

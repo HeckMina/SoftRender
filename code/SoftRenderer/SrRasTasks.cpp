@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "SrRasTasks.h"
 #include "SrMaterial.h"
-#include "SrShadingMode.h"
 #include "SrProfiler.h"
 #include "SrRasterizer.h"
+#include "SrSwShader.h"
 
 #include "mmgr/mmgr.h"
 

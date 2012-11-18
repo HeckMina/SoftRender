@@ -14,6 +14,12 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdvanceShaders.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AdvanceShaders.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FDAF7C58-D734-4DB6-A2D9-CB73B22EFD27}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -112,12 +118,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\SoftRenderer\SrCustomShader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\SoftRenderer\SrCustomShader.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

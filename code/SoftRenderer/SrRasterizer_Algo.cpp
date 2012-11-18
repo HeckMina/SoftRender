@@ -13,7 +13,7 @@
 #include "SrProfiler.h"
 #include "SrMesh.h"
 #include "SrMaterial.h"
-#include "SrShadingMode.h"
+#include "SrSwShader.h"
 
 #include "mmgr/mmgr.h"
 

@@ -10,11 +10,11 @@
    
  */
 
-#ifndef SrShadingMode_h__
-#define SrShadingMode_h__
+#ifndef BasicShaders_h__
+#define BasicShaders_h__
 
 #include "prerequisite.h"
-#include "shading.h"
+#include "SrSwShader.h"
 
 
 class SrFlatShader : public SrSwShader

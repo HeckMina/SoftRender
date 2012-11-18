@@ -205,7 +205,7 @@
     <ClInclude Include="SrShader.h">
       <Filter>RenderSys\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="shading.h">
+    <ClInclude Include="SrSwShader.h">
       <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
     </ClInclude>
   </ItemGroup>

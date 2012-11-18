@@ -10,8 +10,8 @@
    
  */
 
-#ifndef shading_h__
-#define shading_h__
+#ifndef srswshader_h_
+#define srswshader_h_
 
 #include "RendererBase.h"
 

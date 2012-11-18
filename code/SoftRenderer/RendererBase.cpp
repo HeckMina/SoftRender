@@ -9,7 +9,6 @@
  */
 #include "stdafx.h"
 #include "RendererBase.h"
-#include "SrShadingMode.h"
 
 IRenderer::IRenderer( ERendererType type ):m_rendererType(type)
 {

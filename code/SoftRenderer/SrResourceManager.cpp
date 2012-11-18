@@ -6,7 +6,7 @@
 #include "SrMaterial.h"
 #include "SrDefaultMedia.h"
 #include "SrObjLoader.h"
-#include "SrShadingMode.h"
+#include "SrShader.h"
 
 #include "mmgr/mmgr.h"
 
@@ -244,53 +244,63 @@ typedef void (*fnLoadShaders)(GlobalEnvironment* pgEnv);
 
 void SrResourceManager::ReloadShaders()
 {
-	// unload
-	for (uint32 i=0; i < m_handles.size(); ++i)
-	{
-		FreeLibrary( m_handles[i] );
-	}
+	UnloadSwShaders();
 	
 	if ( gEnv->renderer->m_rendererType == eRt_Software )
 	{
-		// ∂¡»°Õ‚π“√¸¡Ó≤Âº˛
-		std::string dir = "\\media\\shader\\";
-		std::string path = "\\media\\shader\\*.ssl";
-		getMediaPath(dir);
-		getMediaPath(path);
 
-		WIN32_FIND_DATAA fd;
-		HANDLE hff = FindFirstFileA(path.c_str(), &fd);
-		BOOL bIsFind = TRUE;
-
-		while(hff && bIsFind)
-		{
-			if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
-			{
-				// do not get into
-			}
-			else
-			{
-				std::string fullpath = dir + fd.cFileName;
-
-				// load dll shaders
-				HMODULE hDllHandle = 0;
-				hDllHandle = LoadLibraryA( fullpath.c_str() );
-				if (hDllHandle)
-				{
-
-					fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
-
-					fn( gEnv );
-					m_handles.push_back(hDllHandle);
-				}		
-			}
-			bIsFind = FindNextFileA(hff, &fd);
-		}
-
+		LoadSwShaders();
 
 	}
 	else
 	{
 
+	}
+}
+
+void SrResourceManager::UnloadSwShaders()
+{
+	// unload
+	for (uint32 i=0; i < m_handles.size(); ++i)
+	{
+		FreeLibrary( m_handles[i] );
+	}
+}
+
+void SrResourceManager::LoadSwShaders()
+{
+	// ∂¡»°Õ‚π“√¸¡Ó≤Âº˛
+	std::string dir = "\\media\\shader\\";
+	std::string path = "\\media\\shader\\*.ssl";
+	getMediaPath(dir);
+	getMediaPath(path);
+
+	WIN32_FIND_DATAA fd;
+	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
+	BOOL bIsFind = TRUE;
+
+	while(hff && bIsFind)
+	{
+		if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// do not get into
+		}
+		else
+		{
+			std::string fullpath = dir + fd.cFileName;
+
+			// load dll shaders
+			HMODULE hDllHandle = 0;
+			hDllHandle = LoadLibraryA( fullpath.c_str() );
+			if (hDllHandle)
+			{
+
+				fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
+
+				fn( gEnv );
+				m_handles.push_back(hDllHandle);
+			}		
+		}
+		bIsFind = FindNextFileA(hff, &fd);
 	}
 }

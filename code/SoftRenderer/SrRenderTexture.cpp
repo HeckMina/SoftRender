@@ -21,5 +21,4 @@ SrRenderTexture::~SrRenderTexture(void)
 	{
 		delete[] m_data;
 	}
-
 }

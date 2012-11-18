@@ -14,6 +14,12 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BasicShaders.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BasicShaders.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4473F102-F580-467A-8FF6-1942F7F527FE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -112,12 +118,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\SoftRenderer\SrShadingMode.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\SoftRenderer\SrShadingMode.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

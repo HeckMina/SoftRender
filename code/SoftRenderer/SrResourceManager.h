@@ -23,25 +23,29 @@ public:
 
 public:
 	SrResourceManager(void);
-	~SrResourceManager(void);
+	virtual ~SrResourceManager(void);
 
-	SrMesh*				LoadMesh(const char* filename);
-	const SrTexture*	LoadTexture(const char* filename, bool bump = false);
-	SrMaterial*			LoadMaterial(const char* filename);
-	SrMaterial*			CreateMaterial(const char* filename);
-	void				LoadMaterialLib(const char* filename);
-	SrShader*			GetShader(const char* name);
-	void				AddShader(SrShader* shader);
+	virtual SrMesh*				LoadMesh(const char* filename);
+	virtual const SrTexture*	LoadTexture(const char* filename, bool bump = false);
+	virtual SrMaterial*			LoadMaterial(const char* filename);
+	virtual SrMaterial*			CreateMaterial(const char* filename);
+	virtual void				LoadMaterialLib(const char* filename);
+	virtual SrShader*			GetShader(const char* name);
+	virtual void				AddShader(SrShader* shader);
 
-	SrTexture*			CreateRenderTexture(const char* name, int width, int height, int bpp);
-	SrMaterial*			CreateManmualMaterial(const char* name);
+	virtual SrTexture*			CreateRenderTexture(const char* name, int width, int height, int bpp);
+	virtual SrMaterial*			CreateManmualMaterial(const char* name);
 
-	void				InitDefaultMedia();
-	SrDefaultMediaPack*	getDefaultMediaPack() {return m_defaultMediaPack;}
+	virtual void				InitDefaultMedia();
+	virtual SrDefaultMediaPack*	getDefaultMediaPack() {return m_defaultMediaPack;}
 
 	virtual void ReloadShaders();
 
 private:
+
+	void UnloadSwShaders();
+	void LoadSwShaders();
+
 	SrResourceLibrary	m_meshLibrary;
 	SrResourceLibrary	m_textureLibrary;
 	SrResourceLibrary	m_materialLibrary;

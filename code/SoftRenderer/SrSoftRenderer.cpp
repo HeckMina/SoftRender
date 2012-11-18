@@ -16,7 +16,7 @@
 #include "srBitmap.h"
 #include "SrRasterizer.h"
 #include "SrProfiler.h"
-#include "SrShadingMode.h"
+#include "SrSwShader.h"
 #include <gl/GL.h>
 
 #include "mmgr/mmgr.h"

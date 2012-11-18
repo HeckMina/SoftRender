@@ -599,7 +599,7 @@
     <ClInclude Include="prerequisite.h" />
     <ClInclude Include="RendererBase.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="shading.h" />
+    <ClInclude Include="SrSwShader.h" />
     <ClInclude Include="SoftRenderApp.h" />
     <ClInclude Include="SrAppFramework.h" />
     <ClInclude Include="SrBitmap.h" />

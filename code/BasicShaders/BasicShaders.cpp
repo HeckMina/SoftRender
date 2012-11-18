@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "SrShadingMode.h"
+#include "BasicShaders.h"
 #include "SrRasterizer.h"
 
 #include "mmgr/mmgr.h"

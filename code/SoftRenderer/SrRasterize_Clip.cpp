@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SrRasterizer.h"
-#include "SrShadingMode.h"
+#include "SrSwShader.h"
 #include "SrMaterial.h"
 
 

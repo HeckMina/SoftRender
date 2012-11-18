@@ -8,11 +8,11 @@
    
  */
 
-#ifndef SrCustomShader_h__
-#define SrCustomShader_h__
+#ifndef AdvanceShaders_h__
+#define AdvanceShaders_h__
 
 #include "prerequisite.h"
-#include "shading.h"
+#include "SrSwShader.h"
 
 class SrSkinSimShader : public SrSwShader
 {

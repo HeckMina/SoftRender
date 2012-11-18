@@ -7,7 +7,6 @@
 #include "InputManager.h"
 #include "SrProfiler.h"
 #include "SrHwD3D9Renderer.h"
-#include "SrShadingMode.h"
 
 #include "mmgr/mmgr.h"
 

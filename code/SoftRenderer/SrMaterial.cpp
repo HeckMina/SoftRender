@@ -55,3 +55,10 @@ void SrMaterial::LoadFromFile()
 // 	}
 	
 }
+
+void SrMaterial::ApplyShaderConstants() const
+{
+	gEnv.renderer->SetShaderConstant(eSC_PS0, &(m_matDiffuse.x), 1);
+	gEnv.renderer->SetShaderConstant(eSC_PS1, &(m_matSpecular.x), 1);
+	gEnv.renderer->SetShaderConstant(eSC_PS2, &(m_glossness), 1);
+}

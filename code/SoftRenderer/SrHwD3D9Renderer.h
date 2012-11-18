@@ -44,6 +44,9 @@ public:
 	
 	virtual bool DrawPrimitive( SrPrimitve* primitive );
 	virtual bool DrawLine( const float3& from, const float3& to );
+
+	virtual bool SetShader( const SrShader* shader );
+	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count );
 	
 private:
 	void FlushText();
@@ -65,6 +68,8 @@ private:
 	virtual void SetGpuMarkEnd( EHwTimerElement element );
 
 	virtual float GetGpuTime( EHwTimerElement element );
+
+
 
 	class SrHwTextFlusher* m_textFlusher;
 

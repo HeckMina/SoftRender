@@ -402,11 +402,11 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
  	m_hwDevice->SetPixelShaderConstantF(3, &(light->diffuseColor.x), 1 );
  	m_hwDevice->SetPixelShaderConstantF(4, &(light->specularColor.x), 1 );
 
-	SrCbuffer_General* cBuffer = reinterpret_cast<SrCbuffer_General*>(&(primitive->material->m_cbuffer));
+//	SrCbuffer_General* cBuffer = reinterpret_cast<SrCbuffer_General*>(&(primitive->material->m_cbuffer));
 
-	m_hwDevice->SetPixelShaderConstantF(5, &(cBuffer->difColor.x), 1 );
-	m_hwDevice->SetPixelShaderConstantF(6, &(cBuffer->spcColor.x), 1 );
-	m_hwDevice->SetPixelShaderConstantF(7, &(cBuffer->glossness), 1 );
+// 	m_hwDevice->SetPixelShaderConstantF(5, &(), 1 );
+// 	m_hwDevice->SetPixelShaderConstantF(6, &(cBuffer->spcColor.x), 1 );
+// 	m_hwDevice->SetPixelShaderConstantF(7, &(cBuffer->glossness), 1 );
 
 	// SetTexture
 	primitive->material->ApplyTextures();
@@ -591,4 +591,14 @@ void SrHwD3D9Renderer::SetGpuMarkEnd( EHwTimerElement element )
 float SrHwD3D9Renderer::GetGpuTime( EHwTimerElement element )
 {
 	return m_gpuTimers[element].getTime();
+}
+
+bool SrHwD3D9Renderer::SetShader( const SrShader* shader )
+{
+	return false;
+}
+
+bool SrHwD3D9Renderer::SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count )
+{
+	return false;
 }

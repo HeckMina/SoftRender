@@ -310,6 +310,111 @@ void SrObjLoader::CreateMeshInternal(SrPrimitives& primitives )
 
 }
 
+struct SrMatLoadingParam
+{
+	float4 Ka;
+	float4 Kd;
+	float4 Ks;
+	float Glossness;
+	float FresnelPower;
+	float FresnelBia;
+	float FresnelScale;
+	bool AlphaTest;
+
+	std::string Kd_map;
+	std::string Kb_map;
+	std::string Ks_map;
+	std::string Kr_map;
+	std::string kspc0_map;
+	std::string shading_mode;
+	std::string mtlname;
+
+	SrMatLoadingParam()
+	{
+		Ka = float4(0,0,0,0);
+		Kd = float4(1.f,1.f,1.f,1.f);
+		Ks = float4(.5f,.5f,.5f,1.f);
+		Glossness = 25.f;
+		FresnelPower = 5.f;
+		FresnelBia = 1.f;
+		FresnelScale = 1.f;
+		AlphaTest = false;
+	}
+
+	void CreateMat()
+	{
+		if (mtlname != "")
+		{
+			// create mtl
+			SrMaterial* matptr = gEnv.resourceMgr->CreateMaterial(mtlname.c_str());
+			SrMaterial& mat = *matptr;
+
+			mtlname = "";
+
+			mat.m_matDiffuse = Kd;
+			mat.m_matSpecular = Ks;
+			mat.m_glossness = Glossness;
+			mat.m_fresnelPower = FresnelPower;
+			mat.m_fresnelBia = FresnelBia;
+			mat.m_fresnelScale = FresnelScale;
+
+			mat.m_alphaTest = AlphaTest;
+
+			// texture
+			if ( !Kd_map.empty())
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kd_map.c_str()));
+			}
+			else
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+			}
+
+			if ( !Kb_map.empty())
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kb_map.c_str(), true));
+			}
+			else
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_n", true));
+			}
+
+			if ( !Ks_map.empty())
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Ks_map.c_str()));
+			}
+			else
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+			}
+
+			if ( !Kr_map.empty())
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kr_map.c_str()));
+			}
+			else
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
+			}
+
+			if ( !kspc0_map.empty())
+			{
+				mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(kspc0_map.c_str()));
+			}
+
+			// clear
+			Kr_map.clear();
+			Ks_map.clear();
+			Kb_map.clear();
+			Kd_map.clear();
+			kspc0_map.clear();
+			AlphaTest = false;
+		}
+	}
+};
+
+
+
 bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 {
 	// Find the file
@@ -321,22 +426,7 @@ bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 	if( !InFile )
 		return S_FALSE;
 
-	float4 Ka(0,0,0,0);
-	float4 Kd(1.f,1.f,1.f,1.f);
-	float4 Ks(.5f,.5f,.5f,1.f);
-	float Glossness = 25.f;
-	float FresnelPower = 5.f;
-	float FresnelBia = 1.f;
-	float FresnelScale = 1.f;
-	bool AlphaTest = false;
-
-	std::string Kd_map;
-	std::string Kb_map;
-	std::string Ks_map;
-	std::string Kr_map;
-	std::string kspc0_map;
-	std::string shading_mode;
-	std::string mtlname;
+	SrMatLoadingParam param;
 
 	for(; ; )
 	{
@@ -350,138 +440,69 @@ bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 		}
 		else if( 0 == _tcscmp( strCommand, _T("newmtl") ) )
 		{
-			if (mtlname != "")
-			{
-				// create mtl
-				SrMaterial* matptr = gEnv.resourceMgr->CreateMaterial(mtlname.c_str());
-				SrMaterial& mat = *matptr;
-
-				mtlname = "";
-
-				// cbuffer
-				mat.m_cbuffer[0] = Ka;
-				mat.m_cbuffer[1] = Kd;
-				mat.m_cbuffer[2] = Ks;
-
-				mat.m_cbuffer[3].x = Glossness;
-				mat.m_cbuffer[3].y = FresnelPower;
-				mat.m_cbuffer[3].z = FresnelBia;
-				mat.m_cbuffer[3].w = FresnelScale;
-
-				mat.m_alphaTest = AlphaTest;
-
-				// texture
-				if ( !Kd_map.empty())
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kd_map.c_str()));
-				}
-				else
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-				}
-
-				if ( !Kb_map.empty())
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kb_map.c_str(), true));
-				}
-				else
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_n", true));
-				}
-
-				if ( !Ks_map.empty())
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Ks_map.c_str()));
-				}
-				else
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-				}
-
-				if ( !Kr_map.empty())
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kr_map.c_str()));
-				}
-				else
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-				}
-
-				if ( !kspc0_map.empty())
-				{
-					mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(kspc0_map.c_str()));
-				}
-
-				// clear
-				Kr_map.clear();
-				Ks_map.clear();
-				Kb_map.clear();
-				Kd_map.clear();
-				kspc0_map.clear();
-				AlphaTest = false;
-			}
-			InFile >> mtlname;
+			param.CreateMat();
+			InFile >> param.mtlname;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("shading") ) )
 		{
-			InFile >> shading_mode;
+			InFile >> param.shading_mode;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Ka") ) )
 		{
-			InFile >> Ka.r >> Ka.g >> Ka.b;
+			//InFile >> Ka.r >> Ka.g >> Ka.b;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Kd") ) )
 		{
-			InFile >> Kd.r >> Kd.g >> Kd.b;
+			InFile >> param.Kd.r >> param.Kd.g >> param.Kd.b;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Ks"))  )
 		{
-			InFile >> Ks.r >> Ks.g >> Ks.b;
+			InFile >> param.Ks.r >> param.Ks.g >> param.Ks.b;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Ns") ) )
 		{
-			InFile >> Glossness;
-			Glossness = Clamp(Glossness, 0.0f, 255.f);
+			InFile >> param.Glossness;
+			param.Glossness = Clamp(param.Glossness, 0.0f, 255.f);
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Nfsp") ) )		// custom attr: fresnel power
 		{
-			InFile >> FresnelPower;
+			InFile >> param.FresnelPower;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Nfsb") ) )		// custom attr: fresnel bia
 		{
-			InFile >> FresnelBia;
+			InFile >> param.FresnelBia;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("Nfss") ) )		// custom attr: fresnel scale
 		{
-			InFile >> FresnelScale;
+			InFile >> param.FresnelScale;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("map_Kd") ) )
 		{		
-			InFile >> Kd_map;
+			InFile >> param.Kd_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("map_Kb") ) )
 		{
-			InFile >> Kb_map;
+			InFile >> param.Kb_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("bump") ) )
 		{
-			InFile >> Kb_map;
+			InFile >> param.Kb_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("map_Ks") ) )
 		{
-			InFile >> Ks_map;
+			InFile >> param.Ks_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("map_Kr") ) )
 		{
-			InFile >> Kr_map;
+			InFile >> param.Kr_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("map_Kspc0") ) )
 		{
-			InFile >> kspc0_map;
+			InFile >> param.kspc0_map;
 		}
 		else if( 0 == _tcscmp( strCommand, _T("alpha_test") ) )
 		{
-			AlphaTest = true;
+			param.AlphaTest = true;
 		}
 		else
 		{
@@ -494,80 +515,8 @@ bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 	m_bIsLoaded = true;
 
 	// create material
-
-	if (mtlname != "")
-	{
-		// create mtl
-		SrMaterial* matptr = gEnv.resourceMgr->CreateMaterial(mtlname.c_str());
-		SrMaterial& mat = *matptr;
-
-		mtlname = "";
-
-		// cbuffer
-		mat.m_cbuffer[0] = Ka;
-		mat.m_cbuffer[1] = Kd;
-		mat.m_cbuffer[2] = Ks;
-
-		mat.m_cbuffer[3].x = Glossness;
-		mat.m_cbuffer[3].y = FresnelPower;
-		mat.m_cbuffer[3].z = FresnelBia;
-		mat.m_cbuffer[3].w = FresnelScale;
-
-		mat.m_alphaTest = AlphaTest;
-
-		// texture
-		if ( !Kd_map.empty())
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kd_map.c_str()));
-		}
-		else
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-		}
-
-		if ( !Kb_map.empty())
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kb_map.c_str(), true));
-		}
-		else
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_n", true));
-		}
-
-		if ( !Ks_map.empty())
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Ks_map.c_str()));
-		}
-		else
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-		}
-
-		if ( !Kr_map.empty())
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(Kr_map.c_str()));
-		}
-		else
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture("$default_d"));
-		}
-
-		if ( !kspc0_map.empty())
-		{
-			mat.m_textures.push_back( gEnv.resourceMgr->LoadTexture(kspc0_map.c_str()));
-		}
-
-
-		// clear
-		Kr_map.clear();
-		Ks_map.clear();
-		Kb_map.clear();
-		Kd_map.clear();
-		kspc0_map.clear();
-	}
-
-
-
+	param.CreateMat();
+	
 // 	if (!shading_mode.empty())
 // 	{
 // 		if (shading_mode == "bump")

@@ -25,9 +25,19 @@ void SrMesh::Draw()
 {
 	for (uint32 i=0; i < m_primitives.size(); ++i)
 	{
-		if( m_primitives[i].material )
+		SrMaterial* mat = m_primitives[i].material;
+		if( mat )
 		{
-			m_primitives[i].material->ApplyTextures();
+			
+			// set shader to renderer
+			gEnv.renderer->SetShader(mat->m_shader);
+
+			// apply texture to renderer
+			mat->ApplyTextures();
+
+			// set shaderConstants
+			mat->ApplyShaderConstants();
+
 			gEnv.renderer->DrawPrimitive( &(m_primitives[i]) );
 		}		
 	}

@@ -161,7 +161,7 @@ static inline void nvLambSkin(float NdotL,
  */
 static inline void CalcLights( const SrShaderContext* context, float3& worldPos, float3& normalDir, float3& viewWS, float4 &diffuseAcc, float4 &specularAcc )
 {
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	for (uint32 i=0; i < context->lightList.size(); ++i)
 	{
@@ -186,7 +186,7 @@ static inline void CalcLights( const SrShaderContext* context, float3& worldPos,
 
 static inline void CalcLightsKajiya_Kay( const SrShaderContext* context, float3& worldPos, float3& normalDir, float3& tangentDir, float3& viewWS, float4 &diffuseAcc, float4 &specularAcc )
 {
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	for (uint32 i=0; i < context->lightList.size(); ++i)
 	{
@@ -220,7 +220,7 @@ static inline void CalcLightsKajiya_Kay( const SrShaderContext* context, float3&
  */
 static inline void CalcLightsSkin( const SrShaderContext* context, float3& worldPos, float3& normalDir, float3& viewWS, float4& subSurfaceCol, float4 &diffuseAcc, float4 &specularAcc )
 {
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	for (uint32 i=0; i < context->lightList.size(); ++i)
 	{

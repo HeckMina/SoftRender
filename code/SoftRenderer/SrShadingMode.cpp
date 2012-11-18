@@ -51,7 +51,7 @@ struct SrFlatShading_Vert2Frag
 	float4 texcoord;			// channel4:xy
 };
 
-void SrFlatShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrFlatShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrFlatShading_Vert2Frag* inTHREE[3] = {(SrFlatShading_Vert2Frag*)vInRef0, (SrFlatShading_Vert2Frag*)vInRef1, (SrFlatShading_Vert2Frag*)vInRef2};
 	SrFlatShading_Vert2Frag* outTHREE[3] = {(SrFlatShading_Vert2Frag*)vOut, (SrFlatShading_Vert2Frag*)vOut1, (SrFlatShading_Vert2Frag*)vOut2};
@@ -72,11 +72,11 @@ void SrFlatShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const voi
 
 }
 
-void SrFlatShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrFlatShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrFlatShading_Vert2Frag* out = (SrFlatShading_Vert2Frag*)vOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// pos处理到世界空间，保存
 	float3 worldpos = (context->matrixs[eMd_World] * in->pos).xyz;
@@ -104,7 +104,7 @@ void SrFlatShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const vo
 	out->texcoord.xy = in->texcoord;
 }
 
-void SrFlatShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrFlatShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrFlatShading_Vert2Frag* verA = static_cast<const SrFlatShading_Vert2Frag*>(rInRef0);
 	const SrFlatShading_Vert2Frag* verB = static_cast<const SrFlatShading_Vert2Frag*>(rInRef1);
@@ -129,10 +129,10 @@ void SrFlatShader::ProcessRasterize( void* rOut, const void* rInRef0, const void
 	}
 }
 
-void SrFlatShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SrFlatShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrFlatShading_Vert2Frag* in = (SrFlatShading_Vert2Frag*)pIn;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)context->cBuffer;
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	float2 texcoord = in->texcoord.xy;
 
@@ -156,11 +156,11 @@ void SrFlatShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderCo
 }
 
 
-void SrGourandShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrGourandShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrGourandShading_Vert2Frag* out = (SrGourandShading_Vert2Frag*)vOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// pos处理到世界空间，保存
 	float3 worldpos = (context->matrixs[eMd_World] * in->pos).xyz;
@@ -190,7 +190,7 @@ void SrGourandShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const
 	out->texcoord.xy = in->texcoord;
 }
 
-void SrGourandShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrGourandShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrGourandShading_Vert2Frag* verA = static_cast<const SrGourandShading_Vert2Frag*>(rInRef0);
 	const SrGourandShading_Vert2Frag* verB = static_cast<const SrGourandShading_Vert2Frag*>(rInRef1);
@@ -214,11 +214,11 @@ void SrGourandShader::ProcessRasterize( void* rOut, const void* rInRef0, const v
 	}
 }
 
-void SrGourandShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SrGourandShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrGourandShading_Vert2Frag* in = (SrGourandShading_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)context->cBuffer;
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// 采样diffuse颜色
 	uint32 col = context->Tex2D( in->texcoord.xy, 0 );
@@ -240,7 +240,7 @@ void SrGourandShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShade
 }
 
 
-void SrPhongShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrPhongShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrPhongShading_Vert2Frag* out = (SrPhongShading_Vert2Frag*)vOut;
@@ -254,7 +254,7 @@ void SrPhongShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const v
 	out->normal_ty = float4((context->matrixs[eMd_World].RotateVector3(in->normal)), in->texcoord.y);
 }
 
-void SrPhongShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrPhongShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrPhongShading_Vert2Frag* verA = static_cast<const SrPhongShading_Vert2Frag*>(rInRef0);
 	const SrPhongShading_Vert2Frag* verB = static_cast<const SrPhongShading_Vert2Frag*>(rInRef1);
@@ -287,11 +287,11 @@ void SrPhongShader::ProcessRasterize( void* rOut, const void* rInRef0, const voi
 #endif
 }
 
-void SrPhongShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SrPhongShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrPhongShading_Vert2Frag* in = (SrPhongShading_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// 采样diffuse颜色
 	float2 tc0( in->worldpos_tx.w, in->normal_ty.w );
@@ -331,7 +331,7 @@ void SrPhongShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderC
 	*out = float4_2_uint32(diffuseAcc);
 }
 
-void SrPhongWithNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrPhongWithNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrPhongShading_Vert2Frag* inTHREE[3] = {(SrPhongShading_Vert2Frag*)vInRef0, (SrPhongShading_Vert2Frag*)vInRef1, (SrPhongShading_Vert2Frag*)vInRef2};
 	SrPhongShading_Vert2Frag* outTHREE[3] = {(SrPhongShading_Vert2Frag*)vOut, (SrPhongShading_Vert2Frag*)vOut1, (SrPhongShading_Vert2Frag*)vOut2};
@@ -355,7 +355,7 @@ void SrPhongWithNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2
 	outTHREE[2]->tangent.xyz = (context->matrixs[eMd_World].RotateVector3(outTHREE[2]->tangent.xyz ));
 }
 
-void SrPhongWithNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrPhongWithNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrPhongShading_Vert2Frag* out = (SrPhongShading_Vert2Frag*)vOut;
@@ -374,7 +374,7 @@ void SrPhongWithNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut
 	//out->texcoord2 = in->texcoord * out->pos.w;
 }
 
-void SrPhongWithNormalShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrPhongWithNormalShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrPhongShading_Vert2Frag* verA = static_cast<const SrPhongShading_Vert2Frag*>(rInRef0);
 	const SrPhongShading_Vert2Frag* verB = static_cast<const SrPhongShading_Vert2Frag*>(rInRef1);
@@ -494,11 +494,11 @@ float2 g_kernel[8] = {
 	float2(-0.7071,-0.7071),
 };
 
-void SRFASTCALL SrPhongWithNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SRFASTCALL SrPhongWithNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrPhongShading_Vert2Frag* in = (SrPhongShading_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 	float2 tc0(in->worldpos_tx.w, in->normal_ty.w);
 	
 	// 采样diffuse颜色

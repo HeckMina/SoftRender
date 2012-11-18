@@ -257,8 +257,8 @@ void SrRasterizer::RasterizeTriangle_Clip( SrRastTriangle& tri, float zNear, flo
 				FixedRasterize(&p1, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
 				FixedRasterize(&p2, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
 #else
-				tri.primitive->material->m_shader->ProcessRasterize(&p1, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
-				tri.primitive->material->m_shader->ProcessRasterize(&p2, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
+				tri.primitive->shader->ProcessRasterize(&p1, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
+				tri.primitive->shader->ProcessRasterize(&p2, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
 #endif
 
 
@@ -314,8 +314,8 @@ void SrRasterizer::RasterizeTriangle_Clip( SrRastTriangle& tri, float zNear, flo
 				FixedRasterize(&p3, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
 				FixedRasterize(&p4, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
 #else
-				tri.primitive->material->m_shader->ProcessRasterize(&p3, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
-				tri.primitive->material->m_shader->ProcessRasterize(&p4, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
+				tri.primitive->shader->ProcessRasterize(&p3, &tri.p[v0], &tri.p[v1], NULL, ratio1, &(tri.primitive->shaderConstants));
+				tri.primitive->shader->ProcessRasterize(&p4, &tri.p[v0], &tri.p[v2], NULL, ratio2, &(tri.primitive->shaderConstants));
 #endif
 
 				// step 3: ¹¹Ôì

@@ -18,6 +18,7 @@
 class SrTexture;
 class SrRasterizer;
 class SrResourceManager;
+class SrShader;
 
 struct SrTextLine
 {
@@ -89,6 +90,10 @@ public:
 	virtual bool DrawPrimitive( SrPrimitve* primitive )=0;
 	virtual bool DrawLine(const float3& from, const float3& to)=0;
 
+	// Shader…Ë÷√
+	virtual bool SetShader(const SrShader* shader) =0;
+	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count ) =0;
+
 	virtual void SetGpuMarkStart(EHwTimerElement element) {}
 	virtual void SetGpuMarkEnd(EHwTimerElement element) {}
 	virtual float GetGpuTime(EHwTimerElement element) {return 0;}
@@ -108,17 +113,12 @@ protected:
 
 
 protected:
-
 	SrVertexBufferArray m_vertexBuffers;
 	SrIndexBufferArray	m_indexBuffers;
 	SrMatrixArray m_matrixStack;
-
-
-
+	
 	uint32 m_frameCount;
-
 	SrTextLines m_textLines;
-
 	HWND m_hWnd;
 
 	

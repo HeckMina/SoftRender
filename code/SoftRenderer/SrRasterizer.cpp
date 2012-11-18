@@ -90,7 +90,6 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 
 	// ÉêÇëäÖÈ¾primitive
 	SrRendPrimitve transformed;
-	transformed.material = primitive->material;
 
 	// vb,ibÉêÇë
 	float start1 = gEnv.timer->getRealTime();	
@@ -126,10 +125,11 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 	//memcpy(transformed.ib->data, primitive->ib->data, primitive->ib->count * sizeof(uint32));
 	
 	// Ìî³äshaderConstants
+	transformed.shader = m_renderer->m_currShader;
 	transformed.shaderConstants.matrixs = m_renderer->m_matrixStack; // matrixStack»º´æ
 	transformed.shaderConstants.textureStage = m_renderer->m_textureStages; // ÎÆÀístage»º´æ
 	transformed.shaderConstants.lightList =gEnv.sceneMgr->m_lightList; // lightList»º´æ
-	transformed.shaderConstants.cBuffer = primitive->material->m_cbuffer; // ²ÄÖÊµÄcBuffer»º´æ
+	memcpy( transformed.shaderConstants.shaderConstants, m_renderer->m_shaderConstants, eSC_ShaderConstantCount * sizeof(float4) );
 	transformed.shaderConstants.alphaTest = primitive->material->m_alphaTest;
 	transformed.shaderConstants.culling = true;
 
@@ -467,12 +467,12 @@ bool SrRasterizer::DrawLine( const float3& from, const float3& to )
 bool SrRasterizer::DrawRHZPrimitive( SrRendPrimitve& rendPrimitive )
 {
 	// Ìî³äshaderConstants
-	rendPrimitive.shaderConstants.matrixs = m_renderer->m_matrixStack; // matrixStack»º´æ
-	rendPrimitive.shaderConstants.textureStage = m_renderer->m_textureStages; // ÎÆÀístage»º´æ
-	rendPrimitive.shaderConstants.lightList = gEnv.sceneMgr->m_lightList; // lightList»º´æ
-	rendPrimitive.shaderConstants.cBuffer = rendPrimitive.material->m_cbuffer; // ²ÄÖÊµÄcBuffer»º´æ
-	rendPrimitive.shaderConstants.alphaTest = true;
-	rendPrimitive.shaderConstants.culling = false;
+// 	rendPrimitive.shaderConstants.matrixs = m_renderer->m_matrixStack; // matrixStack»º´æ
+// 	rendPrimitive.shaderConstants.textureStage = m_renderer->m_textureStages; // ÎÆÀístage»º´æ
+// 	rendPrimitive.shaderConstants.lightList = gEnv.sceneMgr->m_lightList; // lightList»º´æ
+// 	rendPrimitive.shaderConstants.cBuffer = rendPrimitive.material->m_cbuffer; // ²ÄÖÊµÄcBuffer»º´æ
+// 	rendPrimitive.shaderConstants.alphaTest = true;
+// 	rendPrimitive.shaderConstants.culling = false;
 
 	m_rendPrimitivesRHZ.push_back(rendPrimitive);
 	return true;

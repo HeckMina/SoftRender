@@ -15,7 +15,7 @@
 
 class SrShader;
 
-SR_ALIGN struct SrMaterial : public SrResource
+struct SrMaterial : public SrResource
 {
 	SrMaterial(const char* name);
 	~SrMaterial() {}
@@ -23,11 +23,27 @@ SR_ALIGN struct SrMaterial : public SrResource
 	void LoadFromFile();
 	void SetShader( SrShader* shader ) {m_shader = shader;}
 	void ApplyTextures() const;
+	void ApplyShaderConstants() const;
+
+	float4			m_matDiffuse;
+	float4			m_matSpecular;
+
+	union
+	{
+		struct  
+		{
+			float			m_glossness;
+			float			m_fresnelPower;
+			float			m_fresnelBia;
+			float			m_fresnelScale;
+		};
+		float				channel2[4];
+	};
 
 	SrShader*		m_shader;
-	SrBitmapArray		m_textures;			///< 材质纹理
+	SrBitmapArray	m_textures;			///< 材质纹理
+	
 
-	float4				m_cbuffer[8];		///< cbuffer
 
 	bool	m_alphaTest;
 

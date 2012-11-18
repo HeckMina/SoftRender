@@ -35,7 +35,7 @@ void LoadCustomShaders()
 	gEnv.resourceMgr->AddShader(&g_HairShader);
 }
 
-void SrSkinSimShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrSkinSimShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrFresnelNormal_Vert2Frag* inTHREE[3] = {(SrFresnelNormal_Vert2Frag*)vInRef0, (SrFresnelNormal_Vert2Frag*)vInRef1, (SrFresnelNormal_Vert2Frag*)vInRef2};
 	SrFresnelNormal_Vert2Frag* outTHREE[3] = {(SrFresnelNormal_Vert2Frag*)vOut, (SrFresnelNormal_Vert2Frag*)vOut1, (SrFresnelNormal_Vert2Frag*)vOut2};
@@ -59,7 +59,7 @@ void SrSkinSimShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const 
 	outTHREE[2]->tangent.xyz = (context->matrixs[eMd_World].RotateVector3(outTHREE[2]->tangent.xyz ));
 }
 
-void SrSkinSimShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrSkinSimShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrFresnelNormal_Vert2Frag* out = (SrFresnelNormal_Vert2Frag*)vOut;
@@ -78,7 +78,7 @@ void SrSkinSimShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const
 	//out->texcoord2 = in->texcoord * out->pos.w;
 }
 
-void SrSkinSimShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrSkinSimShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrFresnelNormal_Vert2Frag* verA = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef0);
 	const SrFresnelNormal_Vert2Frag* verB = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef1);
@@ -112,11 +112,11 @@ void SrSkinSimShader::ProcessRasterize( void* rOut, const void* rInRef0, const v
  *@remark 使用nvLamb，利用NdotL求取次表面散射的模拟穿透值，从次表面颜色图上采样对应的颜色，作为光照的补充。
  同时，利用NdotE，求取边缘的强度，乘以环境颜色以表现皮肤的通透感。
  */
-void SrSkinSimShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SrSkinSimShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrFresnelNormal_Vert2Frag* in = (SrFresnelNormal_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)context->cBuffer;
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// 采样diffuse颜色
 	float2 tc0(in->worldpos_tx.w, in->normal_ty.w);
@@ -202,7 +202,7 @@ void SrSkinSimShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShade
 	*out = float4_2_uint32(diffuseAcc);
 }
 
-void SrFresnelNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrFresnelNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrFresnelNormal_Vert2Frag* inTHREE[3] = {(SrFresnelNormal_Vert2Frag*)vInRef0, (SrFresnelNormal_Vert2Frag*)vInRef1, (SrFresnelNormal_Vert2Frag*)vInRef2};
 	SrFresnelNormal_Vert2Frag* outTHREE[3] = {(SrFresnelNormal_Vert2Frag*)vOut, (SrFresnelNormal_Vert2Frag*)vOut1, (SrFresnelNormal_Vert2Frag*)vOut2};
@@ -226,7 +226,7 @@ void SrFresnelNormalShader::ProcessPatch( void* vOut, void* vOut1, void* vOut2, 
 	outTHREE[2]->tangent.xyz = (context->matrixs[eMd_World].RotateVector3(outTHREE[2]->tangent.xyz ));
 }
 
-void SrFresnelNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SrFresnelNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrFresnelNormal_Vert2Frag* out = (SrFresnelNormal_Vert2Frag*)vOut;
@@ -244,7 +244,7 @@ void SrFresnelNormalShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2,
 	//out->texcoord2 = in->texcoord * out->pos.w;
 }
 
-void SrFresnelNormalShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final )
+void SrFresnelNormalShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final ) const
 {
 	const SrFresnelNormal_Vert2Frag* verA = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef0);
 	const SrFresnelNormal_Vert2Frag* verB = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef1);
@@ -269,11 +269,11 @@ void SrFresnelNormalShader::ProcessRasterize( void* rOut, const void* rInRef0, c
 	}
 }
 
-void SrFresnelNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context , uint32 address)
+void SrFresnelNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context , uint32 address) const
 {
 	SrFresnelNormal_Vert2Frag* in = (SrFresnelNormal_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)context->cBuffer;
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// 采样diffuse颜色
 	float2 tc0(in->worldpos_tx.w, in->normal_ty.w);
@@ -338,7 +338,7 @@ void SrFresnelNormalShader::ProcessPixel( uint32* pOut, const void* pIn, const S
 	*out = float4_2_uint32(diffuseAcc);
 }
 
-void SRFASTCALL SrHairShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context )
+void SRFASTCALL SrHairShader::ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const
 {
 	SrVertexP3N3T2* in = (SrVertexP3N3T2*)vInRef0;
 	SrFresnelNormal_Vert2Frag* out = (SrFresnelNormal_Vert2Frag*)vOut;
@@ -352,7 +352,7 @@ void SRFASTCALL SrHairShader::ProcessVertex( void* vOut, void* vOut1, void* vOut
 	out->normal_ty = float4((context->matrixs[eMd_World].RotateVector3(in->normal)), in->texcoord.y);
 }
 
-void SRFASTCALL SrHairShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final /*= false */ )
+void SRFASTCALL SrHairShader::ProcessRasterize( void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final /*= false */ ) const
 {
 	const SrFresnelNormal_Vert2Frag* verA = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef0);
 	const SrFresnelNormal_Vert2Frag* verB = static_cast<const SrFresnelNormal_Vert2Frag*>(rInRef1);
@@ -377,11 +377,11 @@ void SRFASTCALL SrHairShader::ProcessRasterize( void* rOut, const void* rInRef0,
 	}
 }
 
-void SRFASTCALL SrHairShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address )
+void SRFASTCALL SrHairShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address ) const
 {
 	SrFresnelNormal_Vert2Frag* in = (SrFresnelNormal_Vert2Frag*)pIn;
 	uint32* out = (uint32*)pOut;
-	SrCbuffer_General* cBuffer = (SrCbuffer_General*)(context->cBuffer);
+	SrPixelShader_Constants* cBuffer = (SrPixelShader_Constants*)(context->GetPixelShaderConstantPtr());
 
 	// 采样diffuse颜色
 	float2 tc0( in->worldpos_tx.w, in->normal_ty.w );

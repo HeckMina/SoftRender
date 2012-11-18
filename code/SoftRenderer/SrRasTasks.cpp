@@ -26,9 +26,9 @@ void SrRasTask_Pixel::Execute()
 		uint32* out = m_oBuffer + m_indexBuffer[i];
 		assert( in->primitive );
 		assert( in->primitive->material );
-		assert( in->primitive->material->m_shader );
+		assert( in->primitive->shader );
 
-		in->primitive->material->m_shader->ProcessPixel( out, in, &(in->primitive->shaderConstants), m_indexBuffer[i] );
+		in->primitive->shader->ProcessPixel( out, in, &(in->primitive->shaderConstants), m_indexBuffer[i] );
 	}
 }
 
@@ -50,7 +50,7 @@ void SrRasTask_Vertex::Execute()
 		void* vsOut = (void*)(m_vb->data + i * m_vb->elementSize);
 		SrRendVertex tmp = *((SrRendVertex*)vsOut);
 		// ´¦Àí
-		m_primitive->material->m_shader->ProcessVertex( vsOut, 0, 0, &tmp, 0, 0, &(m_primitive->shaderConstants) );
+		m_primitive->shader->ProcessVertex( vsOut, 0, 0, &tmp, 0, 0, &(m_primitive->shaderConstants) );
 	}
 }
 

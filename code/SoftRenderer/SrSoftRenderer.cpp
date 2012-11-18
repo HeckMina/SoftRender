@@ -17,6 +17,7 @@
 #include "SrRasterizer.h"
 #include "SrProfiler.h"
 #include "SrShadingMode.h"
+#include <gl/GL.h>
 
 #include "mmgr/mmgr.h"
 
@@ -98,12 +99,15 @@ bool SrSoftRenderer::InnerInitRenderer( HWND hWnd, int width, int height, int bp
 
 	m_normalizeVertexBuffer = (SrRendVertex*)_mm_malloc( SR_NORMALIZE_VB_MAX_SIZE * sizeof(SrRendVertex), 16 );
 
+	m_shaderConstants = (float4*)_mm_malloc( eSC_ShaderConstantCount * sizeof(float4), 16 );
+
 	return true;
 }
 
 bool SrSoftRenderer::InnerShutdownRenderer()
 {
 	_mm_free(m_normalizeVertexBuffer);
+	_mm_free(m_shaderConstants);
 
 	delete m_rasterizer;
 
@@ -204,7 +208,6 @@ void SrSoftRenderer::EndFrame()
 	m_renderState &= ~eRs_Rendering;
 
 	Swap();
-
 
 	for (uint32 i=0; i < m_normlizedVBs.size(); ++i)
 	{
@@ -317,4 +320,16 @@ SrVertexBuffer* SrSoftRenderer::AllocateNormalizedVertexBuffer( uint32 count, bo
 	{
 		return AllocateVertexBuffer( sizeof(SrRendVertex), count);
 	}	
+}
+
+bool SrSoftRenderer::SetShader( const SrShader* shader )
+{
+	m_currShader = shader;
+	return true;
+}
+
+bool SrSoftRenderer::SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count )
+{
+	memcpy( &(m_shaderConstants[slot]), constantStart, vec4Count * sizeof(float4) );
+	return true;
 }

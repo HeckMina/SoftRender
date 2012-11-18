@@ -63,6 +63,7 @@
 #define SR_MAX_TEXTURE_STAGE_NUM 128
 #define FBUFFER_CHANNEL_SIZE 4
 #define SR_GREYSCALE_CLEARCOLOR 0x0
+#define SR_SHADER_CONSTANTS_NUM 64
 
 // 软件光栅化分块策略
 // 此block大小决定了每次线程TASK分发的task个数
@@ -195,7 +196,20 @@ enum EResourceType
 	eRT_Count,
 };
 
+enum EShaderConstantsSlot
+{
+	eSC_VS0 = 0,
+	eSC_VS1,
+	eSC_VS2,
+	eSC_VS3,
 
+	eSC_PS0 = SR_SHADER_CONSTANTS_NUM,
+	eSC_PS1,
+	eSC_PS2,
+	eSC_PS3,
+
+	eSC_ShaderConstantCount = SR_SHADER_CONSTANTS_NUM * 2,
+};
 //////////////////////////////////////////////////////////////////////////
 // 公共渲染结构定义
 
@@ -391,12 +405,17 @@ typedef std::vector<const SrTexture*> SrBitmapArray;			///< 纹理访问队列
  */
 SR_ALIGN struct SrShaderContext
 {
+	float4		  shaderConstants[eSC_ShaderConstantCount];
 	SrMatrixArray matrixs;
 	SrBitmapArray textureStage;
-	SrLightList	  lightList;
-	void*		  cBuffer;
+	SrLightList	  lightList;	
 	bool		  alphaTest;
 	bool		  culling;
+
+	const void* GetPixelShaderConstantPtr() const
+	{
+		return &(shaderConstants[eSC_PS0]);
+	}
 
 	uint32 Tex2D(float2& texcoord, uint32 stage) const;
 };
@@ -405,9 +424,8 @@ SR_ALIGN struct SrShaderContext
  *@brief 通用Constant Buffer
  *@remark cBuffer最大只支持8个float4, 即32个浮点数，定义的时候注意大小。
  */
-SR_ALIGN struct SrCbuffer_General
+SR_ALIGN struct SrPixelShader_Constants
 {
-	float4 ambColor;
 	float4 difColor;
 	float4 spcColor;
 	float glossness; float fresnelPower; float fresnelBia; float fresnelScale;

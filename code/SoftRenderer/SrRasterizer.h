@@ -74,8 +74,8 @@ SR_ALIGN struct SrRendPrimitve
 {
 	SrVertexBuffer*		vb;					///< vertex buffer
 	SrIndexBuffer*		ib;
-	SrMaterial*			material;
 	SrShaderContext		shaderConstants;
+	const SrShader*			shader;
 };
 
 /**
@@ -136,7 +136,7 @@ public:
 	static int Draw_Line(int x0, int y0, int x1, int y1, int color, uint32 *vb_start, int lpitch);
 	static int Clip_Line(int &x1,int &y1,int &x2, int &y2);
 	static int Draw_Clip_Line(int x0,int y0, int x1, int y1, int color, uint32 *dest_buffer, int lpitch);
-private:
+public:
 	std::vector<SrRendPrimitve> m_rendPrimitives;			///< 渲染Primitive队列，每帧接受DrawPrimitive调用后缓存在这里，flush结束时删除
 
 	std::vector<SrRendPrimitve> m_rendPrimitivesRHZ;		///< 渲染Primitive队列，每帧接受DrawPrimitive调用后缓存在这里，flush结束时删除

@@ -48,6 +48,10 @@ public:
 	bool DrawPrimitive( SrPrimitve* primitive );
 	bool DrawLine(const float3& from, const float3& to);
 
+	// Shader设置
+	virtual bool SetShader( const SrShader* shader );
+	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count );
+
 private:
 	// 交换硬件帧缓冲
 	bool Swap();
@@ -57,6 +61,8 @@ private:
 	void FlushText();
 
 	virtual SrVertexBuffer* AllocateNormalizedVertexBuffer( uint32 count, bool fastmode = false );
+
+
 
 
 	// DX硬件对象
@@ -80,6 +86,9 @@ private:
 	SrRendVertex* m_normalizeVertexBuffer;
 	uint32 m_normalizeVBAllocSize;
 	SrVertexBufferArray m_normlizedVBs;
+
+	const SrShader* m_currShader;
+	float4* m_shaderConstants;
 };
 
 #endif // SrRenderer_h__

@@ -108,7 +108,7 @@ void SrRasTaskDispatcher::Init()
  */
 void SrRasTaskDispatcher::Destroy()
 {
-	Wait();
+	//Wait();
 
 	DeleteCriticalSection(&g_taskCS);
 

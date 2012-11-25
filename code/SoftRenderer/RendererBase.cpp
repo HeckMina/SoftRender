@@ -138,9 +138,12 @@ float44 IRenderer::GetMatrix( EMatrixDefine index )
 
 bool IRenderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
 {
+	bool ret = false;
 	m_hWnd = hWnd;
 
-	return InnerInitRenderer(hWnd, width, height, bpp);
+	ret = InnerInitRenderer(hWnd, width, height, bpp);
+
+	return ret;
 }
 
 bool IRenderer::ShutdownRenderer()

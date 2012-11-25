@@ -14,11 +14,12 @@
 #include "prerequisite.h"
 
 struct SrDefaultMediaPack;
+typedef std::map<std::string, SrResource*> SrResourceLibrary;
 
 class SrResourceManager : public IResourceManager
 {
 public:
-	typedef std::map<std::string, SrResource*> SrResourceLibrary;
+	
 	typedef std::vector<HMODULE> SrSwShaderHandles;
 
 public:
@@ -39,21 +40,15 @@ public:
 	virtual void				InitDefaultMedia();
 	virtual SrDefaultMediaPack*	getDefaultMediaPack() {return m_defaultMediaPack;}
 
-	virtual void ReloadShaders();
+	virtual void				LoadShaderList();
 
+	SrResourceLibrary	m_shaderLibrary;
 private:
-
-	void UnloadSwShaders();
-	void LoadSwShaders();
-
 	SrResourceLibrary	m_meshLibrary;
 	SrResourceLibrary	m_textureLibrary;
 	SrResourceLibrary	m_materialLibrary;
-	SrResourceLibrary	m_shaderLibrary;
 
 	SrDefaultMediaPack* m_defaultMediaPack;
-
-	SrSwShaderHandles m_handles;
 };
 
 #endif // SrResourceManager_h__

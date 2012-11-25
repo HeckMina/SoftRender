@@ -319,7 +319,7 @@ struct SrMatLoadingParam
 	float FresnelPower;
 	float FresnelBia;
 	float FresnelScale;
-	bool AlphaTest;
+	float AlphaTest;
 
 	std::string Kd_map;
 	std::string Kb_map;
@@ -338,7 +338,7 @@ struct SrMatLoadingParam
 		FresnelPower = 5.f;
 		FresnelBia = 1.f;
 		FresnelScale = 1.f;
-		AlphaTest = false;
+		AlphaTest = 0;
 	}
 
 	void CreateMat()
@@ -502,7 +502,7 @@ bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 		}
 		else if( 0 == _tcscmp( strCommand, _T("alpha_test") ) )
 		{
-			param.AlphaTest = true;
+			InFile >> param.AlphaTest;
 		}
 		else
 		{
@@ -516,26 +516,6 @@ bool SrObjLoader::LoadMaterialFromMTL( const char* strFileData )
 
 	// create material
 	param.CreateMat();
-	
-// 	if (!shading_mode.empty())
-// 	{
-// 		if (shading_mode == "bump")
-// 		{
-// 			mat.m_shader = &g_PhongShadingWithNormalShader;
-// 		}
-// 		else if (shading_mode == "phong")
-// 		{
-// 			mat.m_shader = &g_PhongShadingShader;
-// 		}
-// 		else if (shading_mode == "gourand")
-// 		{
-// 			mat.m_shader = &g_GourandShadingShader;
-// 		}
-// 		else if (shading_mode == "flat")
-// 		{
-// 			mat.m_shader = &g_FlatShadingShader;
-// 		}
-// 	}
 
 	return S_OK;
 }

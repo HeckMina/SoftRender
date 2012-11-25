@@ -7,6 +7,7 @@
 #include "InputManager.h"
 #include "SrProfiler.h"
 #include "SrHwD3D9Renderer.h"
+#include "SrShader.h"
 
 #include "mmgr/mmgr.h"
 
@@ -114,8 +115,8 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 
 	m_hInst = hInstance; // Store instance handle in our global variable
 
-	const int createWidth = 640;
-	const int createHeight = 360;
+	const int createWidth = 1280;
+	const int createHeight = 720;
 
 	m_hWnd = CreateWindow("SoftRenderer Window Class", "SoftRenderer", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, createWidth, createHeight, NULL, NULL, hInstance, NULL);
@@ -139,7 +140,9 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 
 	// 创建资源管理器
 	gEnv->resourceMgr = new SrResourceManager;
-	//LoadInternalShaders();
+	
+	LoadShaderList();
+
 	gEnv->resourceMgr->InitDefaultMedia();
 
 	// 创建Render上下文
@@ -154,7 +157,7 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	m_pSwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
 	m_pHwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
 	
-	gEnv->resourceMgr->ReloadShaders();
+	gEnv->resourceMgr->LoadShaderList();
 
 	gEnv->timer = new SrTimer;
 	gEnv->timer->Init();
@@ -369,3 +372,9 @@ bool SoftRenderApp::OnInputEvent( const SInputEvent &event )
 	return false;
 }
 
+void SoftRenderApp::LoadShaderList()
+{
+	gEnv->resourceMgr->AddShader( new SrShader( "default", eVd_F4F4F4  ));
+	gEnv->resourceMgr->AddShader( new SrShader( "skin", eVd_F4F4F4F4U4  ));
+	gEnv->resourceMgr->AddShader( new SrShader( "hair", eVd_F4F4F4  ));
+}

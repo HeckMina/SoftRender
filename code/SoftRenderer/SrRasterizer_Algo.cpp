@@ -768,7 +768,7 @@ void SrRasterizer::Rasterize_WritePixel( const void* vertA, const void* vertB, f
 
 
 		// here, rasterize
-		assert( primitive && primitive->material && primitive->shader);
+		assert( primitive && primitive->shader);
 
 #ifdef FIXED_FUNCTION_RASTERIZOR
 		FixedRasterize( thisBuffer, vertA, vertB, NULL, ratio, &(primitive->shaderConstants), true  );

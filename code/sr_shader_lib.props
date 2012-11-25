@@ -3,13 +3,13 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)\..\bin32\media\shader</OutDir>
+    <OutDir>$(SolutionDir)\..\bin32\shader</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetExt>.ssl</TargetExt>
+    <TargetExt>.swsl</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

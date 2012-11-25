@@ -22,10 +22,10 @@
  *@remark Shader类，涵盖物体的着色策略。其中VS,RS,PS每种着色必须实现
    PATCH SHADER为光栅化前对独立三角面片的处理机会，需要处理这一阶段的着色策略可以选择实现。
  */
-class SrSwShader : public SrShader
+class SrSwShader : public SrResource
 {
 public:
-	SrSwShader(const char* name):SrShader(name) {}
+	SrSwShader(const char* name):SrResource(name, eRT_Shader) {}
 	virtual ~SrSwShader(void) {}
 
 	/**
@@ -43,6 +43,9 @@ public:
 	virtual void SRFASTCALL ProcessVertex(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context) const =0;
 	virtual void SRFASTCALL ProcessRasterize(void* rOut, const void* rInRef0, const void* rInRef1, const void* rInRef2, float ratio, const SrShaderContext* context, bool final = false) const = 0;
 	virtual void SRFASTCALL ProcessPixel(uint32* pOut, const void* pIn, const SrShaderContext* context, uint32 address) const =0;
+
+public:
+	class SrShader* m_bindShader;
 };
 
 /**
@@ -264,7 +267,7 @@ static inline void CalcLightsSkin( const SrShaderContext* context, float3& world
 		float specular;
 		float subSurface;
 		BlinnBRDF(normalDir, lightDirWS, viewWS, cBuffer->glossness, diffuse, specular);
-		nvLambSkin( float3::dot( lightDirWS, normalDir ) , 0.3f, subSurface);
+		nvLambSkin( float3::dot( lightDirWS, normalDir ) , 0.5f, subSurface);
 
 		// 
 		diffuseAcc += ((lt->diffuseColor * diffuse) + subSurfaceCol * subSurface);

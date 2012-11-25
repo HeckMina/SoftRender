@@ -585,20 +585,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\bin32\media\shader\default_ps.hlsl" />
-    <None Include="..\..\bin32\media\shader\default_vs.hlsl" />
-    <None Include="..\..\bin32\media\shader\jitaa_ps.hlsl" />
-    <None Include="..\..\bin32\media\shader\rhz_vs.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\blur.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\default.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\dof.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\hair.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\jitaa.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\line.hlsl" />
+    <None Include="..\..\bin32\shader\hwcode\skin.hlsl" />
     <None Include="small.ico" />
     <None Include="SoftRenderer.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\bin32\shader\hwcode\include\constant_def.h" />
+    <ClInclude Include="..\..\bin32\shader\hwcode\include\fwconstant_def.h" />
+    <ClInclude Include="..\..\bin32\shader\hwcode\include\postprocess.h" />
+    <ClInclude Include="..\..\bin32\shader\hwcode\include\shading_lib.h" />
+    <ClInclude Include="..\..\bin32\shader\hwcode\include\vertex_process.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="prerequisite.h" />
     <ClInclude Include="RendererBase.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SrHwRenderTexture.h" />
+    <ClInclude Include="SrHwShader.h" />
     <ClInclude Include="SrSwShader.h" />
     <ClInclude Include="SoftRenderApp.h" />
     <ClInclude Include="SrAppFramework.h" />
@@ -667,6 +677,8 @@
     <ClCompile Include="SrFragmentBuffer.cpp" />
     <ClCompile Include="SrGpuTimer.cpp" />
     <ClCompile Include="SrHwD3D9Renderer.cpp" />
+    <ClCompile Include="SrHwRenderTexture.cpp" />
+    <ClCompile Include="SrHwShader.cpp" />
     <ClCompile Include="SrHwTextFlusher.cpp" />
     <ClCompile Include="SrMaterial.cpp" />
     <ClCompile Include="SrMesh.cpp" />

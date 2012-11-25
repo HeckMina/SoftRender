@@ -101,11 +101,18 @@ bool SrSoftRenderer::InnerInitRenderer( HWND hWnd, int width, int height, int bp
 
 	m_shaderConstants = (float4*)_mm_malloc( eSC_ShaderConstantCount * sizeof(float4), 16 );
 
+	InnerInitShaders();
+
 	return true;
 }
 
 bool SrSoftRenderer::InnerShutdownRenderer()
 {
+	for (uint32 i=0; i < m_swHandles.size(); ++i)
+	{
+		FreeLibrary( m_swHandles[i] );
+	}
+
 	_mm_free(m_normalizeVertexBuffer);
 	_mm_free(m_shaderConstants);
 
@@ -324,20 +331,22 @@ SrVertexBuffer* SrSoftRenderer::AllocateNormalizedVertexBuffer( uint32 count, bo
 
 bool SrSoftRenderer::SetShader( const SrShader* shader )
 {
-	if (shader->getType() == eRT_SwShader)
+	if (shader)
 	{
-		m_currShader = static_cast<const SrSwShader*>(shader);
-	}
-	else
-	{
-		assert(0);
-		m_currShader = NULL;
+		for ( uint32 i=0; i < m_swShaders.size(); ++i )
+		{
+			if (m_swShaders[i] && m_swShaders[i]->m_bindShader == shader)
+			{
+				m_currShader = m_swShaders[i];
+				return true;
+			}
+		}
 	}
 	
 	return true;
 }
 
-bool SrSoftRenderer::SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count )
+bool SrSoftRenderer::SetShaderConstant( uint32 slot, const float* constantStart, uint32 vec4Count )
 {
 	memcpy( &(m_shaderConstants[slot]), constantStart, vec4Count * sizeof(float4) );
 	return true;
@@ -359,4 +368,64 @@ uint32 SrSoftRenderer::Tex2D( float2& texcoord, const SrTexture* texture  ) cons
 	}	
 
 	return ret;
+}
+
+typedef void (*fnModuleInit)(GlobalEnvironment* pgEnv);
+typedef SrSwShader* (*fnLoadShader)(const char* shaderName);
+
+bool SrSoftRenderer::InnerInitShaders()
+{
+	m_swShaders.clear();
+
+	std::string dir = "\\shader\\";
+	std::string path = "\\shader\\*.swsl";
+	getMediaPath(dir);
+	getMediaPath(path);
+	 
+	WIN32_FIND_DATAA fd;
+	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
+	BOOL bIsFind = TRUE;
+	 
+	while(hff && bIsFind)
+	{
+	 	if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
+	 	{
+	 		// do not get into
+	 	}
+	 	else
+	 	{
+	 		std::string fullpath = dir + fd.cFileName;
+	 
+	 		// load dll shaders
+	 		HMODULE hDllHandle = 0;
+	 		hDllHandle = LoadLibraryA( fullpath.c_str() );
+	 		if (hDllHandle)
+	 		{
+				fnModuleInit fnCount = (fnModuleInit)(GetProcAddress( hDllHandle, "ModuleInit" ));
+	 			fnLoadShader fnLoad = (fnLoadShader)(GetProcAddress( hDllHandle, "LoadShader" ));
+	 
+				fnCount(gEnv);
+
+				// add other shaders
+				SrResourceManager* resMng = (SrResourceManager*)gEnv->resourceMgr;
+				SrResourceLibrary::iterator it = resMng->m_shaderLibrary.begin();
+				for (; it != resMng->m_shaderLibrary.end(); ++it)
+				{
+					SrSwShader* shader = fnLoad(it->second->getName());
+					if (shader)
+					{
+						shader->m_bindShader = reinterpret_cast<SrShader*>(it->second);
+						m_swShaders.push_back(shader);
+					}
+					
+				}
+
+ 	 			m_swHandles.push_back(hDllHandle);
+	 		}		
+	 	}
+	 	bIsFind = FindNextFileA(hff, &fd);
+	}
+
+
+	return true;
 }

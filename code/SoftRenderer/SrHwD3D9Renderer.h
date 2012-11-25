@@ -13,13 +13,52 @@
 #include "prerequisite.h"
 #include "SrGpuTimer.h"
 
-struct IDirect3DTexture9;
-
 typedef std::vector<gkGpuTimer> SrGpuTimers;
-typedef std::vector<IDirect3DTexture9*> SrHwTextures;
+
+struct IDirect3DTexture9;
+class SrHwRenderTexture;
+class SrHwShader;
+
 
 class SrHwD3D9Renderer :public IRenderer
 {
+	enum EInternalShader
+	{
+		eInS_line,
+		eInS_dof,
+		eInS_jitaa,
+		eInS_blur,
+
+		eInS_Count
+	};
+
+	enum ERenderTarget
+	{
+		eRtt_Backbuffer0 = 0,
+		eRtt_Backbuffer1,
+		eRtt_BackbufferHalf0,
+		eRtt_BackbufferHalf1,
+		eRtt_BackbufferBlur,
+
+		eRtt_Depth,
+
+		eRtt_Count
+	};
+
+	enum EDSSize
+	{
+		eDSS_Full,
+		eDSS_Half,
+		eDSS_Quad,
+	};
+
+
+	typedef std::vector<IDirect3DTexture9*> SrHwTextures;
+	typedef std::vector<SrHwRenderTexture*> SrHwRenderTextures;
+	typedef std::stack<SrHwRenderTexture*> SrHwRTStack;
+	typedef std::vector<SrHwShader*> SrHwShaders;
+
+	
 public:
 	SrHwD3D9Renderer(void);
 	~SrHwD3D9Renderer(void);
@@ -44,10 +83,16 @@ public:
 	
 	virtual bool DrawPrimitive( SrPrimitve* primitive );
 	virtual bool DrawLine( const float3& from, const float3& to );
+	
+	virtual bool SetHwShader( SrHwShader* shader );
 
 	virtual bool SetShader( const SrShader* shader );
-	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count );
-	
+
+	virtual bool SetShaderConstant( uint32 slot, const float* constantStart, uint32 vec4Count );
+
+	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
+
+
 private:
 	void FlushText();
 
@@ -69,7 +114,19 @@ private:
 
 	virtual float GetGpuTime( EHwTimerElement element );
 
-	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
+	virtual void SetVertexShaderConstants( uint32 startIdx, const float* data, uint32 vec4Count );
+
+	void RP_ProcessDOF();
+	void FX_GaussisanBlur( SrHwRenderTexture* texture, float disort, float scale, int iterate );
+
+
+	void DrawScreenQuad( SrTexture* texture = NULL );
+	void PushRenderTarget( uint8 index, SrHwRenderTexture* texture );
+	void PopRenderTarget( uint8 index );
+	void SetRenderTarget( uint8 index, SrHwRenderTexture* texture );
+
+	void StretchRT2TEX( uint8 index, SrHwRenderTexture* texture );
+	void StretchTEX2TEX( SrHwRenderTexture* source, SrHwRenderTexture* target );
 
 
 
@@ -77,23 +134,29 @@ private:
 
 	struct IDirect3D9* m_d3d9;
 	struct IDirect3DDevice9* m_hwDevice;
-	struct IDirect3DVertexShader9* m_defaultVS;
-	struct IDirect3DVertexShader9* m_rhzVS;
-
-	struct IDirect3DPixelShader9* m_defaultPS;
-	struct IDirect3DPixelShader9* m_jitaaPS;
 
 	struct IDirect3DVertexDeclaration9* m_defaultVertexDecl;
-	struct IDirect3DVertexDeclaration9* m_rhzVertexDecl;
+	struct IDirect3DVertexDeclaration9* m_skinVertexDecl;
 
-	struct IDirect3DTexture9* m_backBuffer0;
-	struct IDirect3DTexture9* m_backBuffer1;
-	struct IDirect3DSurface9* m_depthStencil;
+	struct IDirect3DVertexDeclaration9* m_rhzVertexDecl;
+	struct IDirect3DVertexDeclaration9* m_lineVertexDecl;
+
+		
 	struct IDirect3DSurface9* m_backBuffer;
 
-	SrHwTextures m_hwTextures;
-
 	SrGpuTimers m_gpuTimers;
+
+	SrHwTextures m_hwTextures;
+	SrHwRenderTextures m_hwRTs;
+
+	std::vector<float3> m_drawlines;
+
+	SrHwRTStack m_RTStack[4];
+	SrHwShaders m_hwShaders;
+
+	struct IDirect3DSurface9* m_depthStencil;
+	struct IDirect3DSurface9* m_depthStencilHalf;
+	EDSSize m_DSSize;
 };
 
 #endif // SrHwD3D9Renderer_h__

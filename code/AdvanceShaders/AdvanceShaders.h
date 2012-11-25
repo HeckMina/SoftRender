@@ -17,7 +17,7 @@
 class SrSkinSimShader : public SrSwShader
 {
 public:
-	SrSkinSimShader():SrSwShader("SkinSimShader") {}
+	SrSkinSimShader():SrSwShader("skin") {}
 	~SrSkinSimShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -31,7 +31,7 @@ extern SrSkinSimShader g_SkinSimShader;
 class SrFresnelNormalShader : public SrSwShader
 {
 public:
-	SrFresnelNormalShader():SrSwShader("FresnelWithNormalShader") {}
+	SrFresnelNormalShader():SrSwShader("fresnel") {}
 	~SrFresnelNormalShader() {}
 
 	virtual void SRFASTCALL ProcessPatch(void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;
@@ -45,7 +45,7 @@ extern SrFresnelNormalShader g_FresnelNormalShader;
 class SrHairShader : public SrSwShader
 {
 public:
-	SrHairShader():SrSwShader("HairShader") {}
+	SrHairShader():SrSwShader("hair") {}
 	~SrHairShader() {}
 
 	virtual void SRFASTCALL ProcessVertex( void* vOut, void* vOut1, void* vOut2, const void* vInRef0, const void* vInRef1, const void* vInRef2, const SrShaderContext* context ) const;

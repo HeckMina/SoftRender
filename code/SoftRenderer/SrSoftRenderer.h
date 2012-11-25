@@ -20,7 +20,9 @@ struct SrFragmentBuffer;
  */
 class SrSoftRenderer : public IRenderer
 {
+	typedef std::vector<SrSwShader*> SrSwShaders;
 	friend SrRasterizer;
+
 public:
 	SrSoftRenderer(void);
 	virtual ~SrSoftRenderer(void);
@@ -50,7 +52,7 @@ public:
 
 	// Shader…Ë÷√
 	virtual bool SetShader( const SrShader* shader );
-	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count );
+	virtual bool SetShaderConstant( uint32 slot, const float* constantStart, uint32 vec4Count );
 
 	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
 
@@ -63,6 +65,8 @@ private:
 	void FlushText();
 
 	virtual SrVertexBuffer* AllocateNormalizedVertexBuffer( uint32 count, bool fastmode = false );
+
+	virtual bool InnerInitShaders();
 
 	
 
@@ -92,7 +96,9 @@ private:
 	SrVertexBufferArray m_normlizedVBs;
 
 	const SrSwShader* m_currShader;
+	SrSwShaders m_swShaders;
 	float4* m_shaderConstants;
+	SrHandleList m_swHandles;
 };
 
 #endif // SrRenderer_h__

@@ -28,6 +28,8 @@ void SrSponzaApp::OnInit()
 
 	// 创建SPONZA
 	m_ent = m_scene->CreateEntity("model1", "media\\sponza.obj", "media\\sponza.mtl");
+
+	//m_ent = m_scene->CreateEntity("model1", "media\\prophet\\prophet.obj", "media\\prophet\\prophet.mtl");
 	m_ent->SetScale(float3(2,2,2));
 	SwitchSSAO();
 
@@ -53,16 +55,16 @@ void SrSponzaApp::OnUpdate()
 	m_scene->Update();
 
 	// ssao强制开启JITAA
-	if (m_ssao)
-	{
-		g_context->OpenFeature(eRFeature_JitAA);
-	}
-
-	// dotCovarage强制关闭JITAA
-	if ( g_context->IsFeatureEnable(eRFeature_DotCoverageRendering) )
-	{
-		g_context->CloseFeature(eRFeature_JitAA);
-	}
+// 	if (m_ssao)
+// 	{
+// 		g_context->OpenFeature(eRFeature_JitAA);
+// 	}
+// 
+// 	// dotCovarage强制关闭JITAA
+// 	if ( g_context->IsFeatureEnable(eRFeature_DotCoverageRendering) )
+// 	{
+// 		g_context->CloseFeature(eRFeature_JitAA);
+// 	}
 
 	// 信息输出
 	char buffer[255];
@@ -266,7 +268,7 @@ void SrSponzaApp::SwitchSSAO()
 		m_ssao = false;
 		for (uint32 i=0; i < m_ent->getMaterialCount(); ++i)
 		{
-			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
+			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("default"));
 		}
 	}
 	else
@@ -274,7 +276,7 @@ void SrSponzaApp::SwitchSSAO()
 		m_ssao = true;
 		for (uint32 i=0; i < m_ent->getMaterialCount(); ++i)
 		{
-			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("PhongWithNormalMapShader"));
+			m_ent->getMaterial(i)->SetShader(gEnv->resourceMgr->GetShader("default"));
 		}
 	}
 

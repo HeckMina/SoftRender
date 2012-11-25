@@ -36,17 +36,8 @@ private:
 	HINSTANCE m_hInst;								// current instance
 	HWND m_hWnd;
 	SrApps m_tasks;
-
-
-
-
-
-	void TestScreenBuffer();
-	void TestSampler();
-	void TestDrawPrimitiveCalling();
-
-	void TestRasterizeTri();
-	void TestMesh();
+	
+	void LoadShaderList();
 
 	virtual bool OnInputEvent( const SInputEvent &event );
 

@@ -96,6 +96,9 @@ class SrMesh;
 class SrShader;
 class SrDefaultMediaPack;
 
+typedef std::vector<SrShader*> SrShaderList;
+typedef std::vector<HMODULE> SrHandleList;
+
 //////////////////////////////////////////////////////////////////////////
 // 全局环境
 
@@ -120,17 +123,15 @@ extern GlobalEnvironment* gEnv;
 /**
  *@brief VB格式, 暂时只使用P3N3T2
  */
-enum EVBFormat
+enum ESrVertDecl
 {
-	// data SR_ALIGN struct
-	eVBf_P3N3T2 = 0,
-	eVBf_P3N3G3T2,
+	// data struct ALIGNED
+	eVd_Invalid = 0,
+	eVd_F4F4,
+	eVd_F4F4F4,
+	eVd_F4F4F4F4U4,
 
-	// rend SR_ALIGN struct
-	eVBf_P4N4T4 = 10,
-	eVBf_P4N4G4T4 = 11,	
-
-	eVBf_Max,
+	eVd_Max,
 };
 
 /**
@@ -196,8 +197,7 @@ enum EResourceType
 	eRt_Mesh = 0,
 	eRT_Texture,
 	eRT_Material,
-	eRT_SwShader,
-	eRT_HwShader,
+	eRT_Shader,
 
 	eRT_Count,
 };
@@ -379,6 +379,8 @@ SR_ALIGN struct SrPrimitve
 	SrVertexBuffer*		cachedVb;
 
 	SrMaterial*			material;	///< 材质
+
+	bool				skined;
 };
 
 /**
@@ -412,6 +414,11 @@ typedef std::vector<const SrTexture*> SrBitmapArray;			///< 纹理访问队列
  */
 struct SrPixelShader_Constants
 {
+	float4 perserved0;
+	float4 perserved1;
+	float4 perserved2;
+	float4 perserved3;
+	float4 perserved4;
 	float4 difColor;
 	float4 spcColor;
 	float glossness; float fresnelPower; float fresnelBia; float fresnelScale;
@@ -428,10 +435,11 @@ struct IResourceManager
 	virtual void				LoadMaterialLib(const char* filename) =0;
 	virtual SrShader*			GetShader(const char* name) =0;
 	virtual void				AddShader(SrShader* shader) =0;
-	virtual void				ReloadShaders() =0;
 
 	virtual SrTexture*			CreateRenderTexture(const char* name, int width, int height, int bpp) =0;
 	virtual SrMaterial*			CreateManmualMaterial(const char* name) =0;
+
+	virtual void				LoadShaderList() =0;
 
 	virtual void				InitDefaultMedia() =0;
 	virtual SrDefaultMediaPack*	getDefaultMediaPack() =0;

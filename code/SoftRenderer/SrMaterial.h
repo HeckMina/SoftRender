@@ -45,7 +45,8 @@ struct SrMaterial : public SrResource
 	
 
 
-	bool	m_alphaTest;
+	float	m_alphaTest;
+	bool	m_alphaBlend;
 
 	void * operator new(size_t size) {return _mm_malloc(size, 16);}
 	void operator delete(void *memoryToBeDeallocated) {_mm_free(memoryToBeDeallocated);}

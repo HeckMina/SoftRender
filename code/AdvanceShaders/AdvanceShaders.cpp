@@ -13,13 +13,29 @@
 
 #include "mmgr/mmgr.h"
 
-GlobalEnvironment* gEnv = NULL;\
-	extern "C" __declspec(dllexport) void LoadShaders( GlobalEnvironment* pgEnv )
+GlobalEnvironment* gEnv = NULL;
+
+extern "C" __declspec(dllexport) void ModuleInit( GlobalEnvironment* pgEnv )
 {
 	gEnv = pgEnv;
-	gEnv->resourceMgr->AddShader(&g_SkinSimShader);
-	gEnv->resourceMgr->AddShader(&g_FresnelNormalShader);
-	gEnv->resourceMgr->AddShader(&g_HairShader);
+}
+
+extern "C" __declspec(dllexport) SrSwShader* LoadShader( const char* shaderName )
+{
+	std::vector<SrSwShader*> shaders;
+	shaders.push_back( &g_SkinSimShader );
+	shaders.push_back( &g_FresnelNormalShader );
+	shaders.push_back( &g_HairShader );
+
+	for (uint32 i=0; i < shaders.size(); ++i)
+	{
+		if ( !stricmp(shaders[i]->getName(), shaderName))
+		{
+			return shaders[i];
+		}
+	}
+
+	return NULL;
 }
 
 SrSkinSimShader g_SkinSimShader;
@@ -182,11 +198,11 @@ void SrSkinSimShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShade
 	specularAcc += (reflf * diffuseAcc) * fresnel;
 
 	// rim light
-	specularAcc += ( float4( 1.f, 1.f, 0.95686f, 0.847f ) * diffuseAcc ) * rim;
+	//specularAcc += ( float4( 1.f, 1.f, 0.95686f, 0.847f ) * diffuseAcc ) * rim;
 
 	diffuseAcc = diffuseAcc * matDiff * cBuffer->difColor;
 	// 光照方程2：材质反射色 * 镜面反射光照聚集
-	diffuseAcc += (cBuffer->spcColor * matDiff.a * 10.f) * (specularAcc) ;
+	diffuseAcc += (cBuffer->spcColor * matDiff.a) * (specularAcc) ;
 
 	// 取得n dot e, 并计算fresnel值，这里bias设置为1, power设置为5
 	

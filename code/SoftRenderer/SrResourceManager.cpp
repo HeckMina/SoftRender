@@ -172,22 +172,6 @@ SrShader* SrResourceManager::GetShader( const char* name )
 	return ret;
 }
 
-
-void SrResourceManager::AddShader( SrShader* shader )
-{
-	SrResourceLibrary::iterator it = m_shaderLibrary.find(shader->getName());
-
-	if (it != m_shaderLibrary.end())
-	{
-	}
-	else
-	{
-		m_shaderLibrary.insert(SrResourceLibrary::value_type( shader->getName(), shader ));
-	}
-	
-}
-
-
 SrTexture* SrResourceManager::CreateRenderTexture( const char* name, int width, int height, int bpp )
 {
 	SrTexture* ret = NULL;
@@ -239,68 +223,88 @@ void SrResourceManager::LoadMaterialLib( const char* filename )
 // 		loader.LoadMaterialFromMTL( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
 	}
 }
+// 
+// typedef void (*fnLoadShaders)(GlobalEnvironment* pgEnv);
+// 
+// void SrResourceManager::ReloadShaders()
+// {
+// 	UnloadSwShaders();
+// 	
+// 	if ( gEnv->renderer->m_rendererType == eRt_Software )
+// 	{
+// 
+// 		LoadSwShaders();
+// 
+// 	}
+// 	else
+// 	{
+// 
+// 	}
+// }
 
-typedef void (*fnLoadShaders)(GlobalEnvironment* pgEnv);
+// void SrResourceManager::UnloadSwShaders()
+// {
+// 	// unload
+// 	for (uint32 i=0; i < m_handles.size(); ++i)
+// 	{
+// 		FreeLibrary( m_handles[i] );
+// 	}
+// }
+// 
+// void SrResourceManager::LoadSwShaders()
+// {
+// 	// ¶ÁÈ¡Íâ¹ÒÃüÁî²å¼þ
+// 	std::string dir = "\\media\\shader\\";
+// 	std::string path = "\\media\\shader\\*.ssl";
+// 	getMediaPath(dir);
+// 	getMediaPath(path);
+// 
+// 	WIN32_FIND_DATAA fd;
+// 	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
+// 	BOOL bIsFind = TRUE;
+// 
+// 	while(hff && bIsFind)
+// 	{
+// 		if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
+// 		{
+// 			// do not get into
+// 		}
+// 		else
+// 		{
+// 			std::string fullpath = dir + fd.cFileName;
+// 
+// 			// load dll shaders
+// 			HMODULE hDllHandle = 0;
+// 			hDllHandle = LoadLibraryA( fullpath.c_str() );
+// 			if (hDllHandle)
+// 			{
+// 
+// 				fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
+// 
+// 				fn( gEnv );
+// 				m_handles.push_back(hDllHandle);
+// 			}		
+// 		}
+// 		bIsFind = FindNextFileA(hff, &fd);
+// 	}
+// }
 
-void SrResourceManager::ReloadShaders()
+void SrResourceManager::LoadShaderList()
 {
-	UnloadSwShaders();
-	
-	if ( gEnv->renderer->m_rendererType == eRt_Software )
+
+}
+
+
+void SrResourceManager::AddShader( SrShader* shader )
+{
+	SrResourceLibrary::iterator it = m_shaderLibrary.find(shader->getName());
+
+	if (it != m_shaderLibrary.end())
 	{
-
-		LoadSwShaders();
-
 	}
 	else
 	{
-
+		m_shaderLibrary.insert(SrResourceLibrary::value_type( shader->getName(), shader ));
 	}
-}
 
-void SrResourceManager::UnloadSwShaders()
-{
-	// unload
-	for (uint32 i=0; i < m_handles.size(); ++i)
-	{
-		FreeLibrary( m_handles[i] );
-	}
-}
-
-void SrResourceManager::LoadSwShaders()
-{
-	// ¶ÁÈ¡Íâ¹ÒÃüÁî²å¼þ
-	std::string dir = "\\media\\shader\\";
-	std::string path = "\\media\\shader\\*.ssl";
-	getMediaPath(dir);
-	getMediaPath(path);
-
-	WIN32_FIND_DATAA fd;
-	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
-	BOOL bIsFind = TRUE;
-
-	while(hff && bIsFind)
-	{
-		if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
-		{
-			// do not get into
-		}
-		else
-		{
-			std::string fullpath = dir + fd.cFileName;
-
-			// load dll shaders
-			HMODULE hDllHandle = 0;
-			hDllHandle = LoadLibraryA( fullpath.c_str() );
-			if (hDllHandle)
-			{
-
-				fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
-
-				fn( gEnv );
-				m_handles.push_back(hDllHandle);
-			}		
-		}
-		bIsFind = FindNextFileA(hff, &fd);
-	}
 }

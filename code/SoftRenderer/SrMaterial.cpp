@@ -13,10 +13,10 @@ SrMaterial::SrMaterial( const char* name ):SrResource(name,  eRT_Material)
 {
 	m_shader = NULL;
 	m_textures.clear();
-	m_alphaTest = false;
-
+	m_alphaTest = 0;
+	m_alphaBlend = false;
 	//LoadFromFile();
-	SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
+	SetShader(gEnv->resourceMgr->GetShader("default"));
 }
 
 void SrMaterial::ApplyTextures() const
@@ -32,7 +32,7 @@ void SrMaterial::ApplyTextures() const
 
 void SrMaterial::LoadFromFile()
 {
-	SetShader(gEnv->resourceMgr->GetShader("PhongShader"));
+	SetShader(gEnv->resourceMgr->GetShader("default"));
 
 	SrObjLoader loader;
 
@@ -58,7 +58,7 @@ void SrMaterial::LoadFromFile()
 
 void SrMaterial::ApplyShaderConstants() const
 {
-	gEnv->renderer->SetShaderConstant(eSC_PS0, &(m_matDiffuse.x), 1);
-	gEnv->renderer->SetShaderConstant(eSC_PS1, &(m_matSpecular.x), 1);
-	gEnv->renderer->SetShaderConstant(eSC_PS2, &(m_glossness), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS0 + 5, &(m_matDiffuse.x), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS0 + 6, &(m_matSpecular.x), 1);
+	gEnv->renderer->SetShaderConstant(eSC_PS0 + 7, &(m_glossness), 1);
 }

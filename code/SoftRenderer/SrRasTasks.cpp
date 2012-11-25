@@ -25,7 +25,7 @@ void SrRasTask_Pixel::Execute()
 		SrFragment* in = m_gBuffer + m_indexBuffer[i];
 		uint32* out = m_oBuffer + m_indexBuffer[i];
 		assert( in->primitive );
-		assert( in->primitive->material );
+		//assert( in->primitive->material );
 		assert( in->primitive->shader );
 
 		in->primitive->shader->ProcessPixel( out, in, &(in->primitive->shaderConstants), m_indexBuffer[i] );

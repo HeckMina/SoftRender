@@ -1,7 +1,7 @@
 /**
   @file SrShader.h
   
-  @author Kaiming
+  @author yikaiming
 
   更改日志 history
   ver:1.0
@@ -13,10 +13,7 @@
 
 #include "prerequisite.h"
 #include "SrResource.h"
-#include "SrTexture.h"
-/**
- *@brief Shader上下文结构，用于缓存Flush用的每一个primitive的渲染数据
- */
+
 SR_ALIGN struct SrShaderContext
 {
 	float4		  shaderConstants[eSC_ShaderConstantCount];
@@ -45,8 +42,10 @@ SR_ALIGN struct SrShaderContext
 class SrShader : public SrResource
 {
 public:
-	SrShader(const char* name):SrResource(name, eRT_SwShader) {}
-	virtual ~SrShader(void) {}
+	SrShader(const char* name, ESrVertDecl decl) : SrResource(name, eRT_Shader), m_vertDecl(decl) {}
+	virtual ~SrShader() {}
+
+	ESrVertDecl m_vertDecl;
 };
 
-#endif
+#endif // SrShader_h__

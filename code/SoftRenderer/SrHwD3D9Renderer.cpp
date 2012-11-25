@@ -6,13 +6,28 @@
 #include "SrRasterizer.h"
 #include "SrHwTextFlusher.h"
 #include "SrProfiler.h"
+#include "SrCamera.h"
+#include "SrHwRenderTexture.h"
+#include "SrHwShader.h"
+#include "SrShader.h"
+#include "SrResourceManager.h"
 
 
 const D3DVERTEXELEMENT9 g_defaultDecl[] =
 {
 	{ 0, 0,  D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-	{ 0, 16, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },
-	{ 0, 32, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+	{ 0, 16, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+	{ 0, 32, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+	D3DDECL_END()
+};
+
+const D3DVERTEXELEMENT9 g_skinDecl[] =
+{
+	{ 0, 0,  D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+	{ 0, 16, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+	{ 0, 32, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+	{ 0, 48, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+	{ 0, 64, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
 	D3DDECL_END()
 };
 
@@ -25,11 +40,16 @@ const D3DVERTEXELEMENT9 g_rhzDecl[] =
 	D3DDECL_END()
 };
 
+const D3DVERTEXELEMENT9 g_lineDecl[] =
+{
+	{ 0, 0,  D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+	{ 0, 16, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+	D3DDECL_END()
+};
+
 SrHwD3D9Renderer::SrHwD3D9Renderer(void):IRenderer(eRt_HardwareD3D9)
 {
-	m_defaultVS = NULL;
-	m_defaultPS = NULL;
-	m_rhzVS = NULL;
+	m_DSSize = eDSS_Full;
 }
 
 SrHwD3D9Renderer::~SrHwD3D9Renderer(void)
@@ -65,79 +85,73 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 		return false;
 	}
 
- 	m_hwDevice->CreateTexture( width, height, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_backBuffer0, NULL );
- 	m_hwDevice->CreateTexture( width, height, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_backBuffer1, NULL );
+	m_hwShaders.assign(eInS_Count, NULL);
+	m_hwShaders[eInS_line] = new SrHwShader("line", NULL );
+	m_hwShaders[eInS_dof] = new SrHwShader("dof", NULL );
+	m_hwShaders[eInS_jitaa] = new SrHwShader("jitaa", NULL );
+	m_hwShaders[eInS_blur] = new SrHwShader("blur", NULL );
 
-	m_hwDevice->CreateDepthStencilSurface( width, height, D3DFMT_D16, D3DMULTISAMPLE_NONE, 0, TRUE, &m_depthStencil, NULL );
+	// add other shaders
+	SrResourceManager* resMng = (SrResourceManager*)gEnv->resourceMgr;
+	SrResourceLibrary::iterator it = resMng->m_shaderLibrary.begin();
+	for (; it != resMng->m_shaderLibrary.end(); ++it)
+	{
+		SrHwShader* hwShader = new SrHwShader( it->second->getName(), reinterpret_cast<SrShader*>(it->second) );	
+		m_hwShaders.push_back(hwShader);
+	}
+
+	for (uint32 i=0; i < m_hwShaders.size(); ++i)
+	{
+		if (m_hwShaders[i])
+		{
+			m_hwShaders[i]->Init(m_hwDevice);
+		}		
+	}
+
+	// Create Internal RenderTexture
+	m_hwRTs.assign(eRtt_Count, NULL);
+	m_hwRTs[eRtt_Backbuffer0] = new SrHwRenderTexture("backbuffer0", width, height, eHwRttype_A8R8G8B8 );
+	m_hwRTs[eRtt_Backbuffer1] = new SrHwRenderTexture("backbuffer1", width, height, eHwRttype_A8R8G8B8 );
+	m_hwRTs[eRtt_BackbufferBlur] = new SrHwRenderTexture("backbufferBlur", width, height, eHwRttype_A8R8G8B8 );
+
+	m_hwRTs[eRtt_BackbufferHalf0] = new SrHwRenderTexture("backbufferHalf0", width / 2, height / 2, eHwRttype_A8R8G8B8 );
+	m_hwRTs[eRtt_BackbufferHalf1] = new SrHwRenderTexture("backbufferHalf1", width / 2, height / 2, eHwRttype_A8R8G8B8 );
+
+	m_hwRTs[eRtt_Depth] = new SrHwRenderTexture("depth", width, height, eHwRttype_R32F );
+
+	for (uint32 i=0; i < m_hwRTs.size(); ++i)
+	{
+		if (m_hwRTs[i])
+		{
+			m_hwRTs[i]->Init(m_hwDevice);
+		}		
+	}
+
+	// DepthStencil Surf
+	m_hwDevice->CreateDepthStencilSurface( width, height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &m_depthStencil, NULL );
 	m_hwDevice->SetDepthStencilSurface(m_depthStencil);
-
+	m_hwDevice->CreateDepthStencilSurface( width / 2, height / 2, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &m_depthStencilHalf, NULL );
+	// Get backBuffrt
 	m_hwDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_backBuffer);
 
-	// using default effectr
-	SrMemFile file;
-	std::string path("media\\shader\\default_vs.o");
-	getMediaPath(path);
-	file.Open( path.c_str() );
-	if (file.IsOpen())
-	{
-		if ( FAILED(m_hwDevice->CreateVertexShader( (const DWORD*)(file.Data()), &m_defaultVS )) )
-		{
-			OutputDebugString( "default VS Creation failed." );
-		}
-	}
-	file.Close();
-
-	path = "media\\shader\\default_ps.o";
-	getMediaPath(path);
-	file.Open( path.c_str() );
-	if (file.IsOpen())
-	{
-		if ( FAILED(m_hwDevice->CreatePixelShader( (const DWORD*)(file.Data()), &m_defaultPS )) )
-		{
-			OutputDebugString( "default PS Creation failed." );
-		}
-	}
-	file.Close();
-
-	path = "media\\shader\\jitaa_ps.o";
-	getMediaPath(path);
-	file.Open( path.c_str() );
-	if (file.IsOpen())
-	{
-		if ( FAILED(m_hwDevice->CreatePixelShader( (const DWORD*)(file.Data()), &m_jitaaPS )) )
-		{
-			OutputDebugString( "default PS Creation failed." );
-		}
-	}
-	file.Close();
-	
-	path = "media\\shader\\rhz_vs.o";
-	getMediaPath(path);
-	file.Open( path.c_str() );
-	if (file.IsOpen())
-	{
-		if ( FAILED(m_hwDevice->CreateVertexShader( (const DWORD*)(file.Data()), &m_rhzVS )) )
-		{
-			OutputDebugString( "default PS Creation failed." );
-		}
-	}
-	file.Close();
 	
 	m_hwDevice->CreateVertexDeclaration( g_defaultDecl, &m_defaultVertexDecl);
-	m_hwDevice->CreateVertexDeclaration( g_rhzDecl, &m_rhzVertexDecl);
+	m_hwDevice->CreateVertexDeclaration( g_skinDecl, &m_skinVertexDecl);
 
-	// 打开Z BUFFER
+	m_hwDevice->CreateVertexDeclaration( g_rhzDecl, &m_rhzVertexDecl);
+	m_hwDevice->CreateVertexDeclaration( g_lineDecl, &m_lineVertexDecl);
+
+
+	// 关闭Z BUFFER
 	m_hwDevice->SetRenderState( D3DRS_ZENABLE, TRUE );
 	m_hwDevice->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
+	m_hwDevice->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
 	
-	// text Flusher建立
 	m_textFlusher = new SrHwTextFlusher;
 	m_textFlusher->Init(m_hwDevice);
 	
-	// gpuTimer建立
 	m_gpuTimers.assign(eHt_Count, gkGpuTimer());
 	
-	// 初始化gpuTimer
 	for (uint32 i=0; i < m_gpuTimers.size(); ++i)
 	{
 		m_gpuTimers[i].init( m_hwDevice );
@@ -148,20 +162,35 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 
 bool SrHwD3D9Renderer::InnerShutdownRenderer()
 {
-	// destroy shaders
-	m_defaultVS->Release();
-	m_defaultPS->Release();
-
-	m_rhzVS->Release();
-	m_jitaaPS->Release();
 
 	m_rhzVertexDecl->Release();
 	m_defaultVertexDecl->Release();
+	m_lineVertexDecl->Release();
+	m_skinVertexDecl->Release();
 
 	m_depthStencil->Release();
 
-	m_backBuffer0->Release();
-	m_backBuffer1->Release();
+	for (uint32 i=0; i < m_hwShaders.size(); ++i)
+	{
+		if (m_hwShaders[i])
+		{
+			m_hwShaders[i]->Shutdown();
+		}		
+	}
+
+	for (uint32 i=0; i < m_hwRTs.size(); ++i)
+	{
+		if (m_hwRTs[i])
+		{
+			m_hwRTs[i]->Shutdown();
+		}
+	}
+
+	// clear hw textures
+	for (uint32 i=0; i < m_hwTextures.size(); ++i)
+	{
+		static_cast<IDirect3DTexture9*>(m_hwTextures[i])->Release();
+	}
 
 	for (uint32 i=0; i < m_gpuTimers.size(); ++i)
 	{
@@ -171,11 +200,7 @@ bool SrHwD3D9Renderer::InnerShutdownRenderer()
 	m_textFlusher->Destroy();
 	delete m_textFlusher;
 
-	// clear hw textures
-	for (uint32 i=0; i < m_hwTextures.size(); ++i)
-	{
-		static_cast<IDirect3DTexture9*>(m_hwTextures[i])->Release();
-	}
+	m_backBuffer->Release();
 
 	if( m_hwDevice != NULL )
 		m_hwDevice->Release();
@@ -197,75 +222,70 @@ void SrHwD3D9Renderer::BeginFrame()
 	gEnv->profiler->setBegin(ePe_FlushTime);
 	m_hwDevice->BeginScene();
 
-
 	// if jit-AA, set RenderTarget
 	if ( g_context->IsFeatureEnable(eRFeature_JitAA) )
 	{
-		IDirect3DSurface9* backBuffer0;
-
 		if (getFrameCount() % 2 == 0)
 		{
-			m_backBuffer0->GetSurfaceLevel(0, &backBuffer0);
+			PushRenderTarget(0, m_hwRTs[eRtt_Backbuffer0]);
 		}
 		else
 		{
-			m_backBuffer1->GetSurfaceLevel(0, &backBuffer0);
+			PushRenderTarget(0, m_hwRTs[eRtt_Backbuffer1]);
 		}
-		
-
-		m_hwDevice->SetRenderTarget(0, backBuffer0);
-
-		backBuffer0->Release();
 	}
 	else
 	{
 		m_hwDevice->SetRenderTarget(0, m_backBuffer);
 	}
+
+	PushRenderTarget(1, m_hwRTs[eRtt_Depth]);	
 }
 
 void SrHwD3D9Renderer::EndFrame()
 {
-	// do jit-AA here
+	// draw line
+	SrCamera* cam = gEnv->sceneMgr->GetCamera("cam0");
+	if (cam)
+	{
+		SetHwShader( m_hwShaders[eInS_line] );	
+		m_hwDevice->SetVertexDeclaration(m_lineVertexDecl);
+
+		// SetShader
+		SetMatrix(eMd_WorldViewProj, cam->getViewProjMatrix());
+		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
+
+		m_hwDevice->DrawPrimitiveUP(D3DPT_LINELIST, m_drawlines.size() / 2, &(m_drawlines[0]), sizeof(float3));
+	}
+
+	m_drawlines.clear();
+	PopRenderTarget(1);
+
+	// POST-PROCESS
+	m_hwDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	m_hwDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+	m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+
+	// DOF
+	RP_ProcessDOF();
+
+	// JIT-AA
 	if ( g_context->IsFeatureEnable(eRFeature_JitAA) )
 	{
-		m_hwDevice->SetRenderTarget(0, m_backBuffer);
-		
-		SrRendVertex quadVertex[4];
-
-		quadVertex[0].pos = float4(-0.5f,						-0.5f,						1.0f, 1.0f);
-		quadVertex[1].pos = float4(-0.5f,						g_context->height - 0.5f,	1.0f, 1.0f);
-		quadVertex[2].pos = float4( -0.5f + g_context->width,	-1.0f,						1.0f, 1.0f);
-		quadVertex[3].pos = float4( -0.5f + g_context->width,	g_context->height - 0.5f,	1.0f, 1.0f);
-
-
-		quadVertex[0].channel1 = float4(0, 0, 0, 0);
-		quadVertex[1].channel1 = float4(0, 1, 0, 0);
-		quadVertex[2].channel1 = float4(1, 0, 0, 0);
-		quadVertex[3].channel1 = float4(1, 1, 0, 0);
-
-		m_hwDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		m_hwDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-
-		m_hwDevice->SetVertexShader(m_rhzVS);
-		m_hwDevice->SetPixelShader(m_jitaaPS);
+		// jit aa
+		PopRenderTarget(0);
+		SetHwShader( m_hwShaders[eInS_jitaa] );	
 
 		// set texture
-		m_hwDevice->SetTexture(0, m_backBuffer0);
-		m_hwDevice->SetTexture(1, m_backBuffer1);
+		m_hwRTs[eRtt_Backbuffer0]->Apply(0,0);
+		m_hwRTs[eRtt_Backbuffer1]->Apply(1,0);
 
-		m_hwDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_NONE);
-		m_hwDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_NONE);
-		m_hwDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_NONE);
-		m_hwDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_NONE);
-
-		// SetVertexDeclaration
-		m_hwDevice->SetVertexDeclaration( m_rhzVertexDecl );
-
-		m_hwDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &(quadVertex[0]), sizeof(SrRendVertex));
-
-		m_hwDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		m_hwDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+		DrawScreenQuad();
 	}
+
+	m_hwDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	m_hwDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+	m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	
 	m_hwDevice->EndScene();
 
@@ -286,7 +306,16 @@ void SrHwD3D9Renderer::EndFrame()
 
 bool SrHwD3D9Renderer::HwClear()
 {
-	m_hwDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,SR_GREYSCALE_CLEARCOLOR,SR_GREYSCALE_CLEARCOLOR,SR_GREYSCALE_CLEARCOLOR), 1, 0);
+	//m_hwDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,50,50,50), 1, 0);
+	m_hwDevice->Clear(3, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
+
+	IDirect3DSurface9* colorBuffer;
+	m_hwDevice->GetRenderTarget(0, &colorBuffer);
+
+	m_hwDevice->ColorFill(colorBuffer, NULL, D3DCOLOR_ARGB(255,0,0,0));
+
+	colorBuffer->Release();
+
 	return true;
 }
 
@@ -301,12 +330,17 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 	{
 		m_hwDevice->SetSamplerState(stage, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 		m_hwDevice->SetSamplerState(stage, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		m_hwDevice->SetSamplerState(stage, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 	}
 	else
 	{
 		m_hwDevice->SetSamplerState(stage, D3DSAMP_MINFILTER, D3DTEXF_NONE);
 		m_hwDevice->SetSamplerState(stage, D3DSAMP_MAGFILTER, D3DTEXF_NONE);
+		m_hwDevice->SetSamplerState(stage, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
 	}
+
+	m_hwDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP );
+	m_hwDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP );
 
 	if (texture->m_userData)
 	{
@@ -314,20 +348,15 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 	}
 	else
 	{
-		// 没有被加入，那么创建一下
-
-		// FMT DETECTD!!
-		//D3DFORMAT format = texture->getBPP() == 3? D3DFMT_R8G8B8 : D3DFMT_A8R8G8B8
-		// COPY
 		IDirect3DTexture9** tex = reinterpret_cast<IDirect3DTexture9**>(&(texture->m_userData));
 
 		m_hwDevice->CreateTexture( texture->getWidth(), texture->getHeight(), 0,
-			D3DUSAGE_DYNAMIC,
+			D3DUSAGE_AUTOGENMIPMAP,
 			D3DFMT_A8R8G8B8,
-			D3DPOOL_DEFAULT,
+			D3DPOOL_MANAGED,
 			tex,
 			NULL  );
-		
+
 		D3DLOCKED_RECT rect;
 		if( SUCCEEDED( (*tex)->LockRect(0, &rect, NULL, D3DLOCK_DISCARD) )  )
 		{
@@ -353,8 +382,18 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 					}
 				}
 			}
-									
+
+
+
+			
 			(*tex)->UnlockRect(0);
+
+ 			m_hwDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+ 			m_hwDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+
+			(*tex)->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC);
+			(*tex)->GenerateMipSubLevels();
+			
 
 			m_hwTextures.push_back( static_cast<IDirect3DTexture9*>(texture->m_userData) );
 		}
@@ -376,21 +415,21 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 	// dp time count
 	float time = gEnv->timer->getRealTime();
 
-
-	m_hwDevice->SetVertexShader(m_defaultVS);
-	m_hwDevice->SetPixelShader(m_defaultPS);
-
 	// SetShader
-	m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
-	m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
-	
-	float4 campos;
-	campos.xyz = m_matrixStack[eMd_ViewInverse].GetTranslate();
-	campos.w = 0;
-	if ( primitive->material->m_alphaTest )
+	if (primitive->skined)
 	{
-		campos.w = 0.01f;
+		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
+		m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
+		
+		// apply skeleton
 	}
+	else
+	{
+		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
+		m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
+	}
+		
+	float4 campos = float4(m_matrixStack[eMd_ViewInverse].GetTranslate(), primitive->material->m_alphaTest);
 
 	float3 lightDir = gEnv->sceneMgr->m_lightList[0]->worldPos;
 	SrLight* light = gEnv->sceneMgr->m_lightList[0];
@@ -402,17 +441,11 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
  	m_hwDevice->SetPixelShaderConstantF(3, &(light->diffuseColor.x), 1 );
  	m_hwDevice->SetPixelShaderConstantF(4, &(light->specularColor.x), 1 );
 
-//	SrCbuffer_General* cBuffer = reinterpret_cast<SrCbuffer_General*>(&(primitive->material->m_cbuffer));
+	//SrCbuffer_General* cBuffer = reinterpret_cast<SrCbuffer_General*>(&(primitive->material->m_cbuffer));
 
-// 	m_hwDevice->SetPixelShaderConstantF(5, &(), 1 );
+// 	m_hwDevice->SetPixelShaderConstantF(5, &(cBuffer->difColor.x), 1 );
 // 	m_hwDevice->SetPixelShaderConstantF(6, &(cBuffer->spcColor.x), 1 );
 // 	m_hwDevice->SetPixelShaderConstantF(7, &(cBuffer->glossness), 1 );
-
-	// SetTexture
-	primitive->material->ApplyTextures();
-
-	// SetVertexDeclaration
-	m_hwDevice->SetVertexDeclaration( m_defaultVertexDecl );
 
 	// When Draw, Create Hw Buffer for it
 	if (!primitive->vb->userData)
@@ -440,8 +473,24 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 
 	m_hwDevice->SetIndices( (IDirect3DIndexBuffer9*)(primitive->ib->userData) );
 	m_hwDevice->SetStreamSource( 0, (IDirect3DVertexBuffer9*)(primitive->vb->userData), 0, primitive->vb->elementSize );
-	m_hwDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, primitive->vb->elementCount, 0, primitive->ib->count / 3);
 
+	if (primitive->material->m_alphaBlend)
+	{
+		m_hwDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		m_hwDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		m_hwDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+
+		m_hwDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, primitive->vb->elementCount, 0, primitive->ib->count / 3);
+
+		m_hwDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	}
+	else
+	{
+		m_hwDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, primitive->vb->elementCount, 0, primitive->ib->count / 3);
+	}
+	
 
 	gEnv->profiler->setIncrement(ePe_BatchCount);
 	gEnv->profiler->setIncrement(ePe_TriangleCount, primitive->ib->count / 3);
@@ -452,6 +501,9 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 
 bool SrHwD3D9Renderer::DrawLine( const float3& from, const float3& to )
 {
+	m_drawlines.push_back(from);
+	m_drawlines.push_back(to);
+
 	return true;
 }
 
@@ -477,7 +529,6 @@ SrVertexBuffer* SrHwD3D9Renderer::AllocateVertexBuffer( uint32 elementSize, uint
 	SrVertexBuffer* created = IRenderer::AllocateVertexBuffer(elementSize, count, fastmode);
 	return created;
 }
-
 bool SrHwD3D9Renderer::DeleteVertexBuffer( SrVertexBuffer* target )
 {
 	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
@@ -485,12 +536,12 @@ bool SrHwD3D9Renderer::DeleteVertexBuffer( SrVertexBuffer* target )
 		if( m_vertexBuffers[i] == target )
 		{
 			_mm_free( m_vertexBuffers[i]->data );
-			
+
 			if (target->userData)
 			{
 				((IDirect3DVertexBuffer9*)(target->userData))->Release();
 			}
-			
+
 			delete (m_vertexBuffers[i]);
 			m_vertexBuffers[i] = NULL;
 
@@ -593,17 +644,338 @@ float SrHwD3D9Renderer::GetGpuTime( EHwTimerElement element )
 	return m_gpuTimers[element].getTime();
 }
 
+void SrHwD3D9Renderer::SetVertexShaderConstants( uint32 startIdx, const float* data, uint32 vec4Count )
+{
+	m_hwDevice->SetVertexShaderConstantF( startIdx, data, vec4Count);
+}
+
+void SrHwD3D9Renderer::DrawScreenQuad( SrTexture* texture )
+{
+	int width = g_context->width;
+	int height = g_context->height;
+	if (texture)
+	{
+		width = texture->getWidth();
+		height = texture->getHeight();
+	}
+
+	m_hwDevice->SetVertexDeclaration( m_rhzVertexDecl );
+
+	SrRendVertex quadVertex[4];
+
+	quadVertex[0].pos = float4(-0.5f,							-0.5f,								1.0f, 1.0f);
+	quadVertex[1].pos = float4(-0.5f,							height - 0.5f,						1.0f, 1.0f);
+	quadVertex[2].pos = float4( -0.5f + width,					-0.5f,								1.0f, 1.0f);
+	quadVertex[3].pos = float4( -0.5f + width,					height - 0.5f,						1.0f, 1.0f);
+
+	quadVertex[0].channel1 = float4(0, 0, 0, 0);
+	quadVertex[1].channel1 = float4(0, 1, 0, 0);
+	quadVertex[2].channel1 = float4(1, 0, 0, 0);
+	quadVertex[3].channel1 = float4(1, 1, 0, 0);
+
+	m_hwDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &(quadVertex[0]), sizeof(SrRendVertex));
+}
+
+void SrHwD3D9Renderer::SetRenderTarget( uint8 index, SrHwRenderTexture* texture )
+{
+	if (index == 0)
+	{
+		EDSSize newSize = eDSS_Full;
+		if ( texture->getWidth() == g_context->width / 2 )
+		{
+			newSize = eDSS_Half;
+		}
+		else if ( texture->getWidth() == g_context->width / 4 )
+		{
+			newSize = eDSS_Quad;
+		}
+
+
+		if (newSize != m_DSSize)
+		{
+			m_DSSize = newSize;
+
+			switch ( m_DSSize)
+			{
+			case eDSS_Full:
+				m_hwDevice->SetDepthStencilSurface( m_depthStencil );
+				break;
+			case eDSS_Half:
+				m_hwDevice->SetDepthStencilSurface( m_depthStencilHalf );
+				break;
+			}
+		}
+	}
+
+	IDirect3DSurface9* surf;
+	((IDirect3DTexture9*)(texture->m_userData))->GetSurfaceLevel(0, &surf);	
+	m_hwDevice->SetRenderTarget( index, surf );
+	surf->Release();	
+}
+
+void SrHwD3D9Renderer::PushRenderTarget( uint8 index, SrHwRenderTexture* texture )
+{
+	if (texture)
+	{
+		m_RTStack[index].push(texture);
+
+		SetRenderTarget(index, texture);
+	}
+}
+
+void SrHwD3D9Renderer::PopRenderTarget( uint8 index )
+{
+	if (m_RTStack[index].empty())
+	{
+
+	}
+	else
+	{
+		m_RTStack[index].pop();
+	}
+
+	if (m_RTStack[index].empty())
+	{
+		if (index == 0)
+		{
+			m_hwDevice->SetRenderTarget(0, m_backBuffer);
+			m_hwDevice->SetDepthStencilSurface( m_depthStencil );
+		}
+		else
+		{
+			m_hwDevice->SetRenderTarget(index, NULL);
+		}		
+	}
+	else
+	{
+		SetRenderTarget( index, m_RTStack[index].top() );
+	}
+}
+
+void SrHwD3D9Renderer::StretchRT2TEX( uint8 index, SrHwRenderTexture* texture )
+{
+	IDirect3DSurface9* source;
+	IDirect3DSurface9* target;
+	m_hwDevice->GetRenderTarget(index, &source);
+	((IDirect3DTexture9*)(texture->m_userData))->GetSurfaceLevel(0, &target);
+
+	m_hwDevice->StretchRect( source, NULL, target, NULL, D3DTEXF_NONE );
+
+	source->Release();
+	target->Release();
+}
+
+void SrHwD3D9Renderer::StretchTEX2TEX( SrHwRenderTexture* sourcetex, SrHwRenderTexture* targettex )
+{
+	IDirect3DSurface9* source;
+	IDirect3DSurface9* target;
+	((IDirect3DTexture9*)(sourcetex->m_userData))->GetSurfaceLevel(0, &source);
+	((IDirect3DTexture9*)(targettex->m_userData))->GetSurfaceLevel(0, &target);
+
+	m_hwDevice->StretchRect( source, NULL, target, NULL, D3DTEXF_NONE );
+
+	source->Release();
+	target->Release();
+}
+
+void SrHwD3D9Renderer::RP_ProcessDOF()
+{
+// 	if (g_context->dofDist == 0)
+// 	{
+// 		return;
+// 	}
+
+	StretchRT2TEX( 0, m_hwRTs[eRtt_BackbufferBlur] );
+
+	FX_GaussisanBlur(m_hwRTs[eRtt_BackbufferBlur], 2.5f, 1.0f, 2);
+
+	// dof combine
+	// set param
+	float dof = 15.0f;
+	m_hwDevice->SetPixelShaderConstantF(0, &dof, 1);
+
+	// set shader
+	SetHwShader( m_hwShaders[eInS_dof] );
+	m_hwDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	m_hwDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_hwDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	m_hwRTs[eRtt_BackbufferBlur]->Apply(0,0);
+	m_hwRTs[eRtt_Depth]->Apply(1,0);
+
+	DrawScreenQuad();
+
+	m_hwDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+}
+
+void SrHwD3D9Renderer::FX_GaussisanBlur( SrHwRenderTexture* texture, float disort, float scale, int iterate )
+{
+	// blur first
+	float fDistribution = disort;
+	float fScale = scale;
+	float s1 = 1.f / (g_context->width * 0.5f);
+	float t1 = 1.f / (g_context->height * 0.5f);
+	float4 vWhite( 1.0f, 1.0f, 1.0f, 1.0f );
+
+	// Horizontal/Vertical pass params
+	const int nSamples = 16;
+	int nHalfSamples = (nSamples>>1);
+
+	float4 pHParams[32], pVParams[32], pWeightsPS[32];
+	float pWeights[32], fWeightSum = 0;
+
+	memset( pWeights,0,sizeof(pWeights) );
+
+	int s;
+	for(s = 0; s<nSamples; ++s)
+	{
+		if(fDistribution != 0.0f)
+			pWeights[s] = GaussianDistribution1D(s - nHalfSamples, fDistribution);      
+		else
+			pWeights[s] = 0.0f;
+		fWeightSum += pWeights[s];
+	}
+
+	// normalize weights
+	for(s = 0; s < nSamples; ++s)
+	{
+		pWeights[s] /= fWeightSum;  
+	}
+
+	// set bilinear offsets
+	for(s = 0; s < nHalfSamples; ++s)
+	{
+		float off_a = pWeights[s*2];
+		float off_b = ( (s*2+1) <= nSamples-1 )? pWeights[s*2+1] : 0;   
+		float a_plus_b = (off_a + off_b);
+		if (a_plus_b == 0)
+			a_plus_b = 1.0f;
+		float offset = off_b / a_plus_b;
+
+		pWeights[s] = off_a + off_b;
+		pWeights[s] *= fScale ;
+		pWeightsPS[s] = vWhite * pWeights[s];
+
+		float fCurrOffset = (float) s*2 + offset - nHalfSamples;
+		pHParams[s] = float4(s1 * fCurrOffset , 0, 0, 0);  
+		pVParams[s] = float4(0, t1 * fCurrOffset , 0, 0);       
+	}
+
+	SetHwShader( m_hwShaders[eInS_blur] );
+
+	StretchTEX2TEX( texture, m_hwRTs[eRtt_BackbufferHalf0] );
+	PushRenderTarget(0, m_hwRTs[eRtt_BackbufferHalf1]);
+
+	m_hwRTs[eRtt_BackbufferHalf0]->Apply(0,0);
+
+	m_hwDevice->SetPixelShaderConstantF(0, &(pHParams[0].x), 8);
+	m_hwDevice->SetPixelShaderConstantF(8, &(pWeightsPS[0].x), 8);
+
+	DrawScreenQuad( m_hwRTs[eRtt_BackbufferHalf1] );
+	PopRenderTarget(0);	
+
+	PushRenderTarget(0, m_hwRTs[eRtt_BackbufferHalf0]);
+	m_hwRTs[eRtt_BackbufferHalf1]->Apply(0,0);
+
+	m_hwDevice->SetPixelShaderConstantF(0, &(pVParams[0].x), 8);
+	m_hwDevice->SetPixelShaderConstantF(8, &(pWeightsPS[0].x), 8);
+
+	DrawScreenQuad( m_hwRTs[eRtt_BackbufferHalf0] );
+	PopRenderTarget(0);
+
+	//////////////////////////////////////////////////////////////////////////
+	// iterate 
+	for (int i=0; i < iterate - 1; ++i)
+	{
+		PushRenderTarget(0, m_hwRTs[eRtt_BackbufferHalf1]);
+
+		m_hwRTs[eRtt_BackbufferHalf0]->Apply(0,0);
+
+		m_hwDevice->SetPixelShaderConstantF(0, &(pHParams[0].x), 8);
+		m_hwDevice->SetPixelShaderConstantF(8, &(pWeightsPS[0].x), 8);
+
+		DrawScreenQuad( m_hwRTs[eRtt_BackbufferHalf1] );
+		PopRenderTarget(0);	
+
+		PushRenderTarget(0, m_hwRTs[eRtt_BackbufferHalf0]);
+		m_hwRTs[eRtt_BackbufferHalf1]->Apply(0,0);
+
+		m_hwDevice->SetPixelShaderConstantF(0, &(pVParams[0].x), 8);
+		m_hwDevice->SetPixelShaderConstantF(8, &(pWeightsPS[0].x), 8);
+
+		DrawScreenQuad( m_hwRTs[eRtt_BackbufferHalf0] );
+		PopRenderTarget(0);
+	}
+
+	StretchTEX2TEX( m_hwRTs[eRtt_BackbufferHalf0], texture );
+}
+
+bool SrHwD3D9Renderer::SetHwShader( SrHwShader* shader )
+{
+	if (shader)
+	{
+		if (shader->m_vs)
+		{
+			m_hwDevice->SetVertexShader( shader->m_vs );
+		}
+
+		if (shader->m_ps)
+		{
+			m_hwDevice->SetPixelShader( shader->m_ps );
+		}
+	}
+	
+	return true;
+}
+
 bool SrHwD3D9Renderer::SetShader( const SrShader* shader )
 {
+	if (shader)
+	{
+		for ( uint32 i=0; i < m_hwShaders.size(); ++i )
+		{
+			if (m_hwShaders[i] && m_hwShaders[i]->m_bindShader == shader)
+			{
+				switch( shader->m_vertDecl )
+				{
+				case eVd_F4F4F4:
+					m_hwDevice->SetVertexDeclaration( m_defaultVertexDecl );
+					break;
+				case eVd_F4F4F4F4U4:
+					m_hwDevice->SetVertexDeclaration( m_skinVertexDecl );
+					break;
+				}
+				SetHwShader( m_hwShaders[i] );
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
-bool SrHwD3D9Renderer::SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count )
+bool SrHwD3D9Renderer::SetShaderConstant( uint32 slot, const float* constantStart, uint32 vec4Count )
 {
-	return false;
+	// set shader constant judge by slot
+	if (slot < eSC_PS0)
+	{
+		// vs
+
+		m_hwDevice->SetVertexShaderConstantF( slot, constantStart, vec4Count );
+	}
+	else
+	{
+		// ps
+
+		m_hwDevice->SetPixelShaderConstantF( slot - eSC_PS0, constantStart, vec4Count);
+	}
+
+	return true;
 }
 
 uint32 SrHwD3D9Renderer::Tex2D( float2& texcoord, const SrTexture* texture ) const
 {
 	return 0;
 }
+
+

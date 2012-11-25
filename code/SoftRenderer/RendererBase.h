@@ -92,7 +92,7 @@ public:
 
 	// Shader…Ë÷√
 	virtual bool SetShader(const SrShader* shader) =0;
-	virtual bool SetShaderConstant( EShaderConstantsSlot slot, const float* constantStart, uint32 vec4Count ) =0;
+	virtual bool SetShaderConstant( uint32 slot, const float* constantStart, uint32 vec4Count ) =0;
 
 	virtual void SetGpuMarkStart(EHwTimerElement element) {}
 	virtual void SetGpuMarkEnd(EHwTimerElement element) {}
@@ -114,7 +114,6 @@ public:
 protected:
 	virtual bool InnerInitRenderer(HWND hWnd, int width, int height, int bpp) =0;
 	virtual bool InnerShutdownRenderer() =0;
-
 
 protected:
 	SrVertexBufferArray m_vertexBuffers;

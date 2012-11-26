@@ -33,6 +33,7 @@ SR_ALIGN struct SrCamera
 	void * operator new(size_t size) {return _mm_malloc(size, 16);}
 	void operator delete(void *memoryToBeDeallocated) {_mm_free(memoryToBeDeallocated);}
 	
+	float3 m_farClipVertex[4];
 private:
 	float3 m_pos;
 	Quat m_rot;
@@ -43,6 +44,8 @@ private:
 	float44 cachedView;
 	float44 cachedProj;
 	float44 cachedViewProj;
+
+	
 
 	bool dirt;
 };

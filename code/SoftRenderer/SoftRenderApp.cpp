@@ -8,10 +8,12 @@
 #include "SrProfiler.h"
 #include "SrHwD3D9Renderer.h"
 #include "SrShader.h"
+#include "SrLogger.h"
 
 #include "mmgr/mmgr.h"
 
 GlobalEnvironment* gEnv = NULL;
+SrLogger* g_logger = NULL;
 // Forward declarations of functions included in this code module:
 
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -94,6 +96,10 @@ SoftRenderApp::~SoftRenderApp(void)
 
 BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 {
+	g_logger = new SrLogger();
+	GtLog("///////////////////////////////////");
+	GtLog("SoftRenderer Init...");
+
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -131,6 +137,8 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 
 	MoveWindow(m_hWnd, GetSystemMetrics(SM_CXSCREEN) / 2 - width / 2, GetSystemMetrics(SM_CYSCREEN) / 2 - height / 2, width, height, FALSE);
 
+	GtLog("Window Created. width=%d height=%d", createWidth, createHeight);
+
 	if (!m_hWnd)
 	{
 		return FALSE;
@@ -139,35 +147,41 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	gEnv = new GlobalEnvironment;
 
 	// 创建资源管理器
+	GtLog("Creating ResourceManger...");
 	gEnv->resourceMgr = new SrResourceManager;
-	
+	GtLog("- Loading Shader List...");
 	LoadShaderList();
-
+	GtLog("- Creating Default Procedura Medias...");
 	gEnv->resourceMgr->InitDefaultMedia();
 
 	// 创建Render上下文
+	GtLog("Creating Render Context...");
 	g_context = new SrRendContext(createWidth, createHeight, 32);
 
+	
 	m_pHwRenderer = new SrHwD3D9Renderer;
 	
  	m_pSwRenderer = new SrSoftRenderer;
  	m_pRenderer = m_pSwRenderer;
 	gEnv->renderer = m_pRenderer;
 
+	GtLog("Creating D3D9 Hw Renderer...");
 	m_pSwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
+	GtLog("Creating Sw Renderer...");
 	m_pHwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
-	
-	gEnv->resourceMgr->LoadShaderList();
 
+	
 	gEnv->timer = new SrTimer;
 	gEnv->timer->Init();
+	GtLog("Timer initialized.");
 
 	gEnv->inputSys = new SrInputManager;
 	gEnv->inputSys->Init(m_hWnd);
 	gEnv->inputSys->AddListener(this);
+	GtLog("Input Manager initialized.");
 
 	gEnv->profiler = new SrProfiler;
-
+	GtLog("Profiler initialized.");
 
 	// 显示窗口
 	ShowWindow(m_hWnd, SW_SHOWNORMAL);
@@ -177,26 +191,26 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	SetFocus(m_hWnd);
 	SetForegroundWindow(m_hWnd);
 
+#define OUTPUT_SIZE( x ) \
+	GtLog(#x" size: %d\n", sizeof(x));
+
+	OUTPUT_SIZE( float2 )
+		OUTPUT_SIZE( float3 )
+		OUTPUT_SIZE( float4 )
+		OUTPUT_SIZE( float33 )
+		OUTPUT_SIZE( float44 )
+		OUTPUT_SIZE( Quat )
+
+
+	GtLog("Base system initialized.");
+	GtLog("///////////////////////////////////");
 	SrApps::iterator it = m_tasks.begin();
 	for (; it != m_tasks.end(); ++it)
 	{
 		(*it)->OnInit();
 	}
 
-	// hexin sizeof
 
-	char buffer[255];
-
-#define OUTPUT_SIZE( x ) \
-	sprintf(buffer, #x" size: %d\n", sizeof(x)); \
-	OutputDebugString(buffer);
-
-	OUTPUT_SIZE( float2 )
-	OUTPUT_SIZE( float3 )
-	OUTPUT_SIZE( float4 )
-	OUTPUT_SIZE( float33 )
-	OUTPUT_SIZE( float44 )
-	OUTPUT_SIZE( Quat )
 
 
 	return TRUE;
@@ -282,6 +296,8 @@ void SoftRenderApp::Destroy()
 	}
 
 	delete gEnv;
+
+	delete g_logger;
 }
 
 void SoftRenderApp::Run()

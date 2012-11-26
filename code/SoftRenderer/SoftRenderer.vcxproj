@@ -609,6 +609,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SrHwRenderTexture.h" />
     <ClInclude Include="SrHwShader.h" />
+    <ClInclude Include="SrLogger.h" />
     <ClInclude Include="SrSwShader.h" />
     <ClInclude Include="SoftRenderApp.h" />
     <ClInclude Include="SrAppFramework.h" />
@@ -680,6 +681,7 @@
     <ClCompile Include="SrHwRenderTexture.cpp" />
     <ClCompile Include="SrHwShader.cpp" />
     <ClCompile Include="SrHwTextFlusher.cpp" />
+    <ClCompile Include="SrLogger.cpp" />
     <ClCompile Include="SrMaterial.cpp" />
     <ClCompile Include="SrMesh.cpp" />
     <ClCompile Include="SrObjLoader.cpp" />

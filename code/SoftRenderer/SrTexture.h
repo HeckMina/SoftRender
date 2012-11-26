@@ -32,7 +32,7 @@ public:
 	int getPitch() const {return m_pitch;}
 	ESrBitmapType getTextureType() const {return m_texType;}
 
-	void Apply(uint8 stage, uint8 samplertype)
+	void Apply(uint8 stage, uint8 samplertype) const
 	{
 		gEnv->renderer->SetTextureStage( this, stage);
 	}

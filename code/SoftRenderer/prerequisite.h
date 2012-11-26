@@ -116,6 +116,7 @@ struct GlobalEnvironment
 };
 extern GlobalEnvironment* gEnv;
 
+void GtLog( const char* format, ... );
 
 //////////////////////////////////////////////////////////////////////////
 // Ã¶¾Ù

@@ -51,7 +51,8 @@ fragout ps_main( vert2frag_General IN )
 
 	OUT.color.a = 1;
 
-	OUT.color1 = IN.hPos.z / 1000.0;
+	// linear z
+	OUT.color1 = IN.hPos.z;
 
 	return OUT;
 }

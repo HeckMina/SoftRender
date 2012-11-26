@@ -167,7 +167,7 @@ fragout ps_main( vert2frag IN )
 	OUT.color = sqrt(OUT.color);
 	OUT.color.a = matSpec.w;
 
-	float depth = IN.hPos.z / 1000.0;
+	float depth = IN.hPos.z;
 	if( matColor.w < 0.3)
 		depth = 1;
 	OUT.color1 = depth;

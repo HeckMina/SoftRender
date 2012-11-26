@@ -244,27 +244,33 @@ void SrHwD3D9Renderer::BeginFrame()
 
 void SrHwD3D9Renderer::EndFrame()
 {
-	// draw line
-	SrCamera* cam = gEnv->sceneMgr->GetCamera("cam0");
-	if (cam)
-	{
-		SetHwShader( m_hwShaders[eInS_line] );	
-		m_hwDevice->SetVertexDeclaration(m_lineVertexDecl);
-
-		// SetShader
-		SetMatrix(eMd_WorldViewProj, cam->getViewProjMatrix());
-		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
-
-		m_hwDevice->DrawPrimitiveUP(D3DPT_LINELIST, m_drawlines.size() / 2, &(m_drawlines[0]), sizeof(float3));
-	}
-
-	m_drawlines.clear();
-	PopRenderTarget(1);
-
 	// POST-PROCESS
 	m_hwDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	m_hwDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 	m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+
+	// draw line
+	if (! m_drawlines.empty() )
+	{
+		SrCamera* cam = gEnv->sceneMgr->GetCamera("cam0");
+		if (cam)
+		{
+			SetHwShader( m_hwShaders[eInS_line] );	
+			m_hwDevice->SetVertexDeclaration(m_lineVertexDecl);
+
+			// SetShader
+			SetMatrix(eMd_WorldViewProj, cam->getViewProjMatrix());
+			m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
+
+			m_hwDevice->DrawPrimitiveUP(D3DPT_LINELIST, m_drawlines.size() / 2, &(m_drawlines[0]), sizeof(float3));
+		}
+
+		m_drawlines.clear();
+	}
+
+	PopRenderTarget(1);
+
+
 
 	// DOF
 	RP_ProcessDOF();
@@ -287,10 +293,12 @@ void SrHwD3D9Renderer::EndFrame()
 	m_hwDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 	m_hwDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	
-	m_hwDevice->EndScene();
+	
 
 	FlushText();
 	m_textLines.clear();
+
+	m_hwDevice->EndScene();
 
 	m_hwDevice->Present(NULL, NULL, NULL, NULL);
 
@@ -307,8 +315,8 @@ void SrHwD3D9Renderer::EndFrame()
 bool SrHwD3D9Renderer::HwClear()
 {
 	//m_hwDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,50,50,50), 1, 0);
-	m_hwDevice->Clear(3, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1, 0);
-
+	m_hwDevice->Clear(2, NULL, D3DCLEAR_TARGET, 0, 1, 0);
+	m_hwDevice->Clear(1, NULL, D3DCLEAR_ZBUFFER, 0, 1, 0);
 	IDirect3DSurface9* colorBuffer;
 	m_hwDevice->GetRenderTarget(0, &colorBuffer);
 
@@ -358,7 +366,7 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 			NULL  );
 
 		D3DLOCKED_RECT rect;
-		if( SUCCEEDED( (*tex)->LockRect(0, &rect, NULL, D3DLOCK_DISCARD) )  )
+		if( SUCCEEDED( (*tex)->LockRect(0, &rect, NULL, NULL) )  )
 		{
 			// copy line by line
 			// if argb
@@ -388,9 +396,6 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 			
 			(*tex)->UnlockRect(0);
 
- 			m_hwDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
- 			m_hwDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
-
 			(*tex)->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC);
 			(*tex)->GenerateMipSubLevels();
 			
@@ -415,37 +420,21 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 	// dp time count
 	float time = gEnv->timer->getRealTime();
 
-	// SetShader
-	if (primitive->skined)
-	{
-		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
-		m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
-		
-		// apply skeleton
-	}
-	else
-	{
-		m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
-		m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
-	}
-		
-	float4 campos = float4(m_matrixStack[eMd_ViewInverse].GetTranslate(), primitive->material->m_alphaTest);
-
+	float4 campos_w = float4(m_matrixStack[eMd_ViewInverse].GetTranslate(), g_context->viewport.f );
 	float3 lightDir = gEnv->sceneMgr->m_lightList[0]->worldPos;
 	SrLight* light = gEnv->sceneMgr->m_lightList[0];
 	float4 amb = gEnv->sceneMgr->GetSkyLightColor();
 
-	m_hwDevice->SetPixelShaderConstantF(0, &(campos.x), 1 );
+	m_hwDevice->SetVertexShaderConstantF(0, &(m_matrixStack[eMd_WorldViewProj].m00),4);
+	m_hwDevice->SetVertexShaderConstantF(4, &(m_matrixStack[eMd_World].m00),4);
+	m_hwDevice->SetVertexShaderConstantF(8, &(campos_w.x),1);
+
+	campos_w.w = primitive->material->m_alphaTest;
+	m_hwDevice->SetPixelShaderConstantF(0, &(campos_w.x), 1 );
 	m_hwDevice->SetPixelShaderConstantF(1, &(lightDir.x), 1 );
 	m_hwDevice->SetPixelShaderConstantF(2, &(amb.x), 1 );
  	m_hwDevice->SetPixelShaderConstantF(3, &(light->diffuseColor.x), 1 );
  	m_hwDevice->SetPixelShaderConstantF(4, &(light->specularColor.x), 1 );
-
-	//SrCbuffer_General* cBuffer = reinterpret_cast<SrCbuffer_General*>(&(primitive->material->m_cbuffer));
-
-// 	m_hwDevice->SetPixelShaderConstantF(5, &(cBuffer->difColor.x), 1 );
-// 	m_hwDevice->SetPixelShaderConstantF(6, &(cBuffer->spcColor.x), 1 );
-// 	m_hwDevice->SetPixelShaderConstantF(7, &(cBuffer->glossness), 1 );
 
 	// When Draw, Create Hw Buffer for it
 	if (!primitive->vb->userData)
@@ -596,7 +585,7 @@ bool SrHwD3D9Renderer::UpdateVertexBuffer( SrVertexBuffer* target )
 			IDirect3DVertexBuffer9* buffer = (IDirect3DVertexBuffer9*)(target->userData);
 
 			void* gpuData = NULL;
-			if ( SUCCEEDED( buffer->Lock( 0, target->elementSize * target->elementCount, &gpuData, D3DLOCK_DISCARD ) ) )
+			if ( SUCCEEDED( buffer->Lock( 0, target->elementSize * target->elementCount, &gpuData, NULL ) ) )
 			{
 				memcpy( gpuData, target->data, target->elementSize * target->elementCount );
 
@@ -617,7 +606,7 @@ bool SrHwD3D9Renderer::UpdateIndexBuffer( SrIndexBuffer* target )
 			IDirect3DIndexBuffer9* buffer = (IDirect3DIndexBuffer9*)(target->userData);
 
 			void* gpuData = NULL;
-			if ( SUCCEEDED( buffer->Lock( 0, target->count * sizeof(uint32), &gpuData, D3DLOCK_DISCARD ) ) )
+			if ( SUCCEEDED( buffer->Lock( 0, target->count * sizeof(uint32), &gpuData, NULL ) ) )
 			{
 				memcpy( gpuData, target->data, target->count * sizeof(uint32) );
 
@@ -668,10 +657,21 @@ void SrHwD3D9Renderer::DrawScreenQuad( SrTexture* texture )
 	quadVertex[2].pos = float4( -0.5f + width,					-0.5f,								1.0f, 1.0f);
 	quadVertex[3].pos = float4( -0.5f + width,					height - 0.5f,						1.0f, 1.0f);
 
-	quadVertex[0].channel1 = float4(0, 0, 0, 0);
-	quadVertex[1].channel1 = float4(0, 1, 0, 0);
-	quadVertex[2].channel1 = float4(1, 0, 0, 0);
-	quadVertex[3].channel1 = float4(1, 1, 0, 0);
+	quadVertex[0].channel1 = float4(0, 0, 1, 0);
+	quadVertex[1].channel1 = float4(0, 1, 1, 0);
+	quadVertex[2].channel1 = float4(1, 0, 1, 0);
+	quadVertex[3].channel1 = float4(1, 1, 1, 0);
+
+	SrCamera* cam = gEnv->sceneMgr->GetCamera("cam0");
+	if (cam)
+	{
+		quadVertex[0].channel2 = float4(cam->m_farClipVertex[0], 1);
+		quadVertex[1].channel2 = float4(cam->m_farClipVertex[1], 1);
+		quadVertex[2].channel2 = float4(cam->m_farClipVertex[2], 1);
+		quadVertex[3].channel2 = float4(cam->m_farClipVertex[3], 1);
+	}
+
+	
 
 	m_hwDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &(quadVertex[0]), sizeof(SrRendVertex));
 }
@@ -792,7 +792,11 @@ void SrHwD3D9Renderer::RP_ProcessDOF()
 	// dof combine
 	// set param
 	float dof = 15.0f;
-	m_hwDevice->SetPixelShaderConstantF(0, &dof, 1);
+
+	float4 campos = float4(m_matrixStack[eMd_ViewInverse].GetTranslate(), 1.f);
+	m_hwDevice->SetPixelShaderConstantF(0, &campos.x, 1);
+
+	m_hwDevice->SetPixelShaderConstantF(1, &dof, 1);
 
 	// set shader
 	SetHwShader( m_hwShaders[eInS_dof] );
@@ -801,6 +805,9 @@ void SrHwD3D9Renderer::RP_ProcessDOF()
 	m_hwDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 	m_hwRTs[eRtt_BackbufferBlur]->Apply(0,0);
+
+	//const SrTexture* tex = gEnv->resourceMgr->LoadTexture( "default_d");
+	//tex->Apply(0,0);
 	m_hwRTs[eRtt_Depth]->Apply(1,0);
 
 	DrawScreenQuad();
@@ -976,6 +983,11 @@ bool SrHwD3D9Renderer::SetShaderConstant( uint32 slot, const float* constantStar
 uint32 SrHwD3D9Renderer::Tex2D( float2& texcoord, const SrTexture* texture ) const
 {
 	return 0;
+}
+
+bool SrHwD3D9Renderer::UpdateShaderConstantsPerFrame()
+{
+	return true;
 }
 
 

@@ -37,6 +37,34 @@ void SrCamera::Update()
 	}
 
 	cachedViewProj = cachedView * cachedProj;
+
+	float3 lookDir = (m_rot.GetRow2());
+	lookDir.normalize();
+	float3 m_farCenter = lookDir * m_zFar;
+	float3 rightDir = float3(0,1,0) % lookDir;
+	rightDir.normalize();
+	float3 headDir = lookDir % rightDir;
+	headDir.normalize();
+
+	float h = tanf( m_fov / 180.f * SR_PI * 0.5f ) * m_zFar;
+	float w = h * aspect;
+
+	rightDir *= w;
+	headDir *=  h;
+
+	m_farClipVertex[0] = m_farCenter - rightDir + headDir;
+	m_farClipVertex[1] = m_farCenter - rightDir - headDir;
+	m_farClipVertex[2] = m_farCenter + rightDir + headDir;
+	m_farClipVertex[3] = m_farCenter + rightDir - headDir;
+
+// 	gEnv->renderer->DrawLine( m_pos, m_pos + m_farClipVertex[0] );
+// 	gEnv->renderer->DrawLine( m_pos, m_pos + m_farClipVertex[1] );
+// 	gEnv->renderer->DrawLine( m_pos, m_pos + m_farClipVertex[2] );
+// 	gEnv->renderer->DrawLine( m_pos, m_pos + m_farClipVertex[3] );
+// 	gEnv->renderer->DrawLine( m_pos + m_farClipVertex[0], m_pos + m_farClipVertex[3] );
+// 	gEnv->renderer->DrawLine( m_pos + m_farClipVertex[1], m_pos + m_farClipVertex[2] );
+// 	gEnv->renderer->DrawLine( m_pos + m_farClipVertex[0], m_pos + m_farClipVertex[1] );
+// 	gEnv->renderer->DrawLine( m_pos + m_farClipVertex[2], m_pos + m_farClipVertex[3] );
 }
 
 void SrCamera::Move( const float3& localTranslate )

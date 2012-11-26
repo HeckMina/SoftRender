@@ -85,10 +85,10 @@ SrDefaultMediaPack::SrDefaultMediaPack( void )
 	// diffuse
 	// bitmap access is BGRA
 	buffer = (uint32*)(defaultDiffuse->getBuffer());
-	*(buffer + 0 ) = 0xff7f7f7f; *(buffer + 1 ) = 0xff7f7f7f; *(buffer + 2 ) = 0xff7f7f7f; *(buffer + 3 ) = 0xff7f7f7f;
-	*(buffer + 4 ) = 0xff7f7f7f; *(buffer + 5 ) = 0xff7f7f7f; *(buffer + 6 ) = 0xff7f7f7f; *(buffer + 7 ) = 0xff7f7f7f;
-	*(buffer + 8 ) = 0xff7f7f7f; *(buffer + 9 ) = 0xff7f7f7f; *(buffer + 10) = 0xff7f7f7f; *(buffer + 11) = 0xff7f7f7f;
-	*(buffer + 12) = 0xff7f7f7f; *(buffer + 13) = 0xff7f7f7f; *(buffer + 14) = 0xff7f7f7f; *(buffer + 15) = 0xff7f7f7f;
+	*(buffer + 0 ) = 0xff2f2f2f; *(buffer + 1 ) = 0xff2f2f2f; *(buffer + 2 ) = 0xff7f7f7f; *(buffer + 3 ) = 0xff7f7f7f;
+	*(buffer + 4 ) = 0xff2f2f2f; *(buffer + 5 ) = 0xff2f2f2f; *(buffer + 6 ) = 0xff7f7f7f; *(buffer + 7 ) = 0xff7f7f7f;
+	*(buffer + 8 ) = 0xff7f7f7f; *(buffer + 9 ) = 0xff7f7f7f; *(buffer + 10) = 0xff2f2f2f; *(buffer + 11) = 0xff2f2f2f;
+	*(buffer + 12) = 0xff7f7f7f; *(buffer + 13) = 0xff7f7f7f; *(buffer + 14) = 0xff2f2f2f; *(buffer + 15) = 0xff2f2f2f;
 
 
 	// flat

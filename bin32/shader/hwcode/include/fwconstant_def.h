@@ -2,8 +2,10 @@
 
 float4x4 mvp : VS_REGSITER( c0 );
 float4x4 world : VS_REGSITER( c4 );
-#define HKG_MAX_BLEND_MATRICES 54
-float4x4 g_mLocalMatrixArray[HKG_MAX_BLEND_MATRICES] : VS_REGSITER( c8 );
+float4 eyepos_far : VS_REGSITER( c8 );
+
+#define HKG_MAX_BLEND_MATRICES 60
+float4x4 g_mLocalMatrixArray[HKG_MAX_BLEND_MATRICES] : VS_REGSITER( c16 );
 
 sampler DiffuseSampler : PS_REGSITER( s0 ) = sampler_state
 {

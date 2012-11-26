@@ -112,7 +112,7 @@ SrCamera* SrScene::CreateCamera( const char* name )
 		return it->second;
 	}
 
-	SrCamera* cam = new SrCamera(float3(0,0,0), Quat::CreateIdentity(), 60.f, 2.0f, 1000.f);
+	SrCamera* cam = new SrCamera(float3(0,0,0), Quat::CreateIdentity(), 60.f, 0.25f, 8000.f);
 
 	m_cameraLib.insert(SrCameraLibrary::value_type( name, cam ));
 

@@ -92,6 +92,8 @@ public:
 
 	virtual uint32 Tex2D( float2& texcoord, const SrTexture* texture ) const;
 
+	virtual bool UpdateShaderConstantsPerFrame();
+
 
 private:
 	void FlushText();

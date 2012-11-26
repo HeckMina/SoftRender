@@ -74,6 +74,6 @@ vert2frag_General vs_output( app2vert IN )
 	OUT.worldpos = mul(world , position);
 	OUT.texcoord = IN.texcoord;
 	OUT.hPos = OUT.pos;
-	OUT.hPos.z 
+	OUT.hPos.z = OUT.hPos.z / eyepos_far.w;
 	return OUT;
 }

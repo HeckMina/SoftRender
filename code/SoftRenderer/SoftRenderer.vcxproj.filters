@@ -244,6 +244,9 @@
     <ClInclude Include="..\..\bin32\shader\hwcode\include\vertex_process.h">
       <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
     </ClInclude>
+    <ClInclude Include="SrLogger.h">
+      <Filter>AppLayer\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SrBitmap.cpp">
@@ -353,6 +356,9 @@
     </ClCompile>
     <ClCompile Include="SrHwShader.cpp">
       <Filter>RenderSys\HardwareRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SrLogger.cpp">
+      <Filter>AppLayer\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

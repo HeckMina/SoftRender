@@ -361,6 +361,8 @@ struct SrMatLoadingParam
 			mat.m_alphaTest = AlphaTest;
 
 			// texture
+			mat.m_textures.clear();
+
 			if ( !Kd_map.empty())
 			{
 				mat.m_textures.push_back( gEnv->resourceMgr->LoadTexture(Kd_map.c_str()));

@@ -16,6 +16,8 @@
 typedef std::vector<gkGpuTimer> SrGpuTimers;
 
 struct IDirect3DTexture9;
+struct IDirect3DVertexBuffer9;
+struct IDirect3DIndexBuffer9;
 class SrHwRenderTexture;
 class SrHwShader;
 
@@ -54,6 +56,8 @@ class SrHwD3D9Renderer :public IRenderer
 
 
 	typedef std::vector<IDirect3DTexture9*> SrHwTextures;
+	typedef std::vector<IDirect3DVertexBuffer9*> SrBindVBs;
+	typedef std::vector<IDirect3DIndexBuffer9*> SrBindIBs;
 	typedef std::vector<SrHwRenderTexture*> SrHwRenderTextures;
 	typedef std::stack<SrHwRenderTexture*> SrHwRTStack;
 	typedef std::vector<SrHwShader*> SrHwShaders;
@@ -98,14 +102,6 @@ public:
 private:
 	void FlushText();
 
-	virtual SrVertexBuffer* AllocateVertexBuffer( uint32 elementSize, uint32 count, bool fastmode = false );
-
-	virtual bool DeleteVertexBuffer( SrVertexBuffer* target );
-
-	virtual SrIndexBuffer* AllocateIndexBuffer( uint32 count );
-
-	virtual bool DeleteIndexBuffer( SrIndexBuffer* target );
-
 	virtual bool UpdateVertexBuffer( SrVertexBuffer* target );
 
 	virtual bool UpdateIndexBuffer( SrIndexBuffer* target );
@@ -132,7 +128,7 @@ private:
 
 
 
-	class SrHwTextFlusher* m_textFlusher;
+	//class SrHwTextFlusher* m_textFlusher;
 
 	struct IDirect3D9* m_d3d9;
 	struct IDirect3DDevice9* m_hwDevice;
@@ -159,6 +155,9 @@ private:
 	struct IDirect3DSurface9* m_depthStencil;
 	struct IDirect3DSurface9* m_depthStencilHalf;
 	EDSSize m_DSSize;
+
+	SrBindVBs m_bindVBs;
+	SrBindIBs m_bindIBs;
 };
 
 #endif // SrHwD3D9Renderer_h__

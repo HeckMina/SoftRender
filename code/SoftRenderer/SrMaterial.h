@@ -20,7 +20,6 @@ struct SrMaterial : public SrResource
 	SrMaterial(const char* name);
 	~SrMaterial() {}
 
-	void LoadFromFile();
 	void SetShader( SrShader* shader ) {m_shader = shader;}
 	void ApplyTextures() const;
 	void ApplyShaderConstants() const;
@@ -42,8 +41,6 @@ struct SrMaterial : public SrResource
 
 	SrShader*		m_shader;
 	SrBitmapArray	m_textures;			///< ²ÄÖÊÎÆÀí
-	
-
 
 	float	m_alphaTest;
 	bool	m_alphaBlend;

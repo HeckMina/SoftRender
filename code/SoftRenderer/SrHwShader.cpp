@@ -20,7 +20,7 @@ void SrHwShader::Init(IDirect3DDevice9* device)
 	std::string path(m_name);
 	path = "\\shader\\" + m_name;
 	getMediaPath(path);
-	file.Open( (path +  + ".srvs").c_str() );
+	file.Open( (path + ".srvs").c_str() );
 	if (file.IsOpen())
 	{
 		if ( FAILED(device->CreateVertexShader( (const DWORD*)(file.Data()), &m_vs )) )
@@ -28,9 +28,30 @@ void SrHwShader::Init(IDirect3DDevice9* device)
 			GtLog("[D3D9 Hw Renderer] Hw VShader [%s] Compile Failed.", m_name.c_str());
 		}
 	}
+	else
+	{
+		GtLogWarning("[D3D9 Hw Renderer] Hw VShader [%s] Not exist.", m_name.c_str());
+		GtLogInfo("[D3D9 Hw Renderer] Compiling Hw Shader...");
+		char buffer[1024];
+		sprintf(buffer, "fxc.exe /E vs_main /Zpc /T vs_3_0 /Fo shader\\%s.srvs shader\\hwcode\\%s.hlsl",
+			m_name.c_str(),
+			m_name.c_str());
+
+		if( system( buffer ) == 0 )
+		{
+			file.Open( (path + ".srvs").c_str() );
+			if( file.IsOpen() )
+			{
+				if ( FAILED(device->CreateVertexShader( (const DWORD*)(file.Data()), &m_vs )) )
+				{
+					GtLog("[D3D9 Hw Renderer] Hw VShader [%s] Compile Failed.", m_name.c_str());
+				}
+			}
+		}
+	}
 	file.Close();
 
-	file.Open( (path +  + ".srps").c_str() );
+	file.Open( (path + ".srps").c_str() );
 	if (file.IsOpen())
 	{
 		if ( FAILED(device->CreatePixelShader( (const DWORD*)(file.Data()), &m_ps )) )
@@ -38,9 +59,30 @@ void SrHwShader::Init(IDirect3DDevice9* device)
 			GtLog("[D3D9 Hw Renderer] Hw PShader [%s] Compile Failed.", m_name.c_str());
 		}
 	}
+	else
+	{
+		GtLogWarning("[D3D9 Hw Renderer] Hw PShader [%s] Not exist.", m_name.c_str());
+		GtLogInfo("[D3D9 Hw Renderer] Compiling Hw Shader...");
+		char buffer[1024];
+		sprintf(buffer, "fxc.exe /E ps_main /Zpc /T ps_3_0 /Fo shader\\%s.srps shader\\hwcode\\%s.hlsl",
+			m_name.c_str(),
+			m_name.c_str());
+
+		if( system( buffer ) == 0 )
+		{
+			file.Open( (path + ".srps").c_str() );
+			if( file.IsOpen() )
+			{
+				if ( FAILED(device->CreatePixelShader( (const DWORD*)(file.Data()), &m_ps )) )
+				{
+					GtLog("[D3D9 Hw Renderer] Hw PShader [%s] Compile Failed.", m_name.c_str());
+				}
+			}
+		}
+	}
 	file.Close();
 
-	GtLog("[D3D9 Hw Renderer] Hw Shader [%s] Compiled.", m_name.c_str());
+	GtLog("[D3D9 Hw Renderer] Hw Shader [%s] Created.", m_name.c_str());
 }
 
 void SrHwShader::Shutdown()

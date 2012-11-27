@@ -26,7 +26,7 @@ SrResourceManager::SrResourceManager(void)
 SrResourceManager::~SrResourceManager(void)
 {
 	// destroy all loaded resources
-
+	GtLogInfo("[ResourceManager] Shutting down.");
 	SrResourceLibrary::iterator it = m_meshLibrary.begin();
 	for (; it != m_meshLibrary.end(); ++it)
 	{
@@ -54,16 +54,18 @@ SrResourceManager::~SrResourceManager(void)
 		}
 	}
 
-// 	it = m_shaderLibrary.begin();
-// 	for (; it != m_shaderLibrary.end(); ++it)
-// 	{
-// 		if (it->second)
-// 		{
-// 			delete it->second;
-// 		}
-// 	}
+	it = m_shaderLibrary.begin();
+	for (; it != m_shaderLibrary.end(); ++it)
+	{
+		if (it->second)
+		{
+			delete it->second;
+		}
+	}
 
 	delete m_defaultMediaPack;
+
+	GtLogInfo("[ResourceManager] Shutted down.");
 }
 
 SrMesh* SrResourceManager::LoadMesh( const char* filename )
@@ -216,78 +218,9 @@ void SrResourceManager::LoadMaterialLib( const char* filename )
 	}
 	else
 	{
-// 		char msg[250];
-// 		sprintf_s(msg, "文件[ %s ]未找到！使用默认资源。", realname.c_str());
-// 		MessageBox(NULL, msg, "SrResourceManager", MB_OK );
-// 
-// 		loader.LoadMaterialFromMTL( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
 	}
 }
-// 
-// typedef void (*fnLoadShaders)(GlobalEnvironment* pgEnv);
-// 
-// void SrResourceManager::ReloadShaders()
-// {
-// 	UnloadSwShaders();
-// 	
-// 	if ( gEnv->renderer->m_rendererType == eRt_Software )
-// 	{
-// 
-// 		LoadSwShaders();
-// 
-// 	}
-// 	else
-// 	{
-// 
-// 	}
-// }
 
-// void SrResourceManager::UnloadSwShaders()
-// {
-// 	// unload
-// 	for (uint32 i=0; i < m_handles.size(); ++i)
-// 	{
-// 		FreeLibrary( m_handles[i] );
-// 	}
-// }
-// 
-// void SrResourceManager::LoadSwShaders()
-// {
-// 	// 读取外挂命令插件
-// 	std::string dir = "\\media\\shader\\";
-// 	std::string path = "\\media\\shader\\*.ssl";
-// 	getMediaPath(dir);
-// 	getMediaPath(path);
-// 
-// 	WIN32_FIND_DATAA fd;
-// 	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
-// 	BOOL bIsFind = TRUE;
-// 
-// 	while(hff && bIsFind)
-// 	{
-// 		if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
-// 		{
-// 			// do not get into
-// 		}
-// 		else
-// 		{
-// 			std::string fullpath = dir + fd.cFileName;
-// 
-// 			// load dll shaders
-// 			HMODULE hDllHandle = 0;
-// 			hDllHandle = LoadLibraryA( fullpath.c_str() );
-// 			if (hDllHandle)
-// 			{
-// 
-// 				fnLoadShaders fn = (fnLoadShaders)(GetProcAddress( hDllHandle, "LoadShaders" ));
-// 
-// 				fn( gEnv );
-// 				m_handles.push_back(hDllHandle);
-// 			}		
-// 		}
-// 		bIsFind = FindNextFileA(hff, &fd);
-// 	}
-// }
 
 void SrResourceManager::LoadShaderList()
 {

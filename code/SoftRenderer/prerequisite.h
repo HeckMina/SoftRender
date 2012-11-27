@@ -58,6 +58,8 @@
 #include "util/memfile.h"
 #include "util/event.h"
 
+#include "SrLogger.h"
+
 //////////////////////////////////////////////////////////////////////////
 // ‰÷»æπÊ∏Ò≈‰÷√
 #define SR_MAX_TEXTURE_STAGE_NUM 128
@@ -115,8 +117,6 @@ struct GlobalEnvironment
 	SrScene*				sceneMgr;
 };
 extern GlobalEnvironment* gEnv;
-
-void GtLog( const char* format, ... );
 
 //////////////////////////////////////////////////////////////////////////
 // √∂æŸ

@@ -112,7 +112,7 @@ SrCamera* SrScene::CreateCamera( const char* name )
 		return it->second;
 	}
 
-	SrCamera* cam = new SrCamera(float3(0,0,0), Quat::CreateIdentity(), 60.f, 0.25f, 8000.f);
+	SrCamera* cam = new SrCamera(float3(0,0,0), Quat::CreateIdentity(), 60.f, 1.0f, 8000.f);
 
 	m_cameraLib.insert(SrCameraLibrary::value_type( name, cam ));
 
@@ -192,9 +192,6 @@ void SrScene::RenderVisbility( SrCamera* cam )
 SrLight* SrScene::AddLight()
 {
 	SrLight* ret = new SrLight;
-	//SrLight* ret = (SrLight*)(_mm_malloc(sizeof(SrLight), 16));
-
-
 	m_lightList.push_back(ret);
 
 	return ret;

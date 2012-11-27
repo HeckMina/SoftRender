@@ -68,11 +68,6 @@ private:
 
 	virtual bool InnerInitShaders();
 
-	
-
-
-
-
 	// DXÓ²¼þ¶ÔÏó
 	struct IDirect3D9* m_d3d9;
 	struct IDirect3DDevice9* m_hwDevice;
@@ -87,9 +82,6 @@ private:
 	int m_bufferPitch;
 
 	SrBitmapArray m_textureStages;
-
-	HFONT m_bigFont;
-	HFONT m_smallFont;
 
 	SrRendVertex* m_normalizeVertexBuffer;
 	uint32 m_normalizeVBAllocSize;

@@ -17,6 +17,8 @@ SrMaterial::SrMaterial( const char* name ):SrResource(name,  eRT_Material)
 	m_alphaBlend = false;
 	//LoadFromFile();
 	SetShader(gEnv->resourceMgr->GetShader("default"));
+
+	GtLog("[ResourceManager] Material[%s] Created.", m_name.c_str());
 }
 
 void SrMaterial::ApplyTextures() const
@@ -28,32 +30,6 @@ void SrMaterial::ApplyTextures() const
 	{
 		gEnv->renderer->SetTextureStage( *it , index );
 	}
-}
-
-void SrMaterial::LoadFromFile()
-{
-	SetShader(gEnv->resourceMgr->GetShader("default"));
-
-	SrObjLoader loader;
-
-	// load file in memory
-	SrMemFile matFile;
-	std::string realname(m_name);
-	getMediaPath(realname);
-	matFile.Open( realname.c_str() );
-// 	if (matFile.IsOpen())
-// 	{
-// 		loader.LoadMaterialFromMTL( matFile.Data() , *this );
-// 	}
-// 	else
-// 	{
-// 		char msg[250];
-// 		sprintf_s(msg, "文件[ %s ]未找到！使用默认资源。", realname.c_str());
-// 		MessageBox(NULL, msg, "SrResourceManager", MB_OK );
-// 
-// 		loader.LoadMaterialFromMTL( gEnv->resourceMgr->getDefaultMediaPack()->getDefaultMtl(), *this );
-// 	}
-	
 }
 
 void SrMaterial::ApplyShaderConstants() const

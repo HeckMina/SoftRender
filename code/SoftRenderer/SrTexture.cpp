@@ -6,7 +6,7 @@
 
 SrTexture::SrTexture( const char* name ) : SrResource(name, eRT_Texture), m_userData(NULL)
 {
-
+	GtLog("[ResourceManager] Texture[%s] Created.", m_name.c_str());
 }
 
 uint32 SrTexture::Get( const float2& p, ESamplerFilter mode /*= eSF_Linear*/ ) const

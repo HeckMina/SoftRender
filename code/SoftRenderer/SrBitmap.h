@@ -13,12 +13,6 @@
 #include "prerequisite.h"
 #include "SrTexture.h"
 
-
-namespace ATL
-{
-	class CImage;
-}
-
 class SrBitmap : public SrTexture
 {
 public:
@@ -30,7 +24,7 @@ public:
 
 private:
 	SrBitmap(void);
-	ATL::CImage* m_image;
+	uint8* m_rawData;
 };
 
 #endif // SrBitmap_h__

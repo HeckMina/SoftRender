@@ -70,7 +70,7 @@ void SrLogger::Log( const char* line )
 
 		std::cout << buffer;
 
-		delete buffer;
+		delete[] buffer;
 	}
 	
 }

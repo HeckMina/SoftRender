@@ -74,7 +74,7 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	d3dpp.BackBufferWidth = width;
 	d3dpp.BackBufferHeight = height;
-	//d3dpp.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+	d3dpp.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
 	// Create the D3DDevice
 	if( FAILED( m_d3d9->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
@@ -148,8 +148,8 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 	m_hwDevice->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
 	m_hwDevice->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE );
 	
-	m_textFlusher = new SrHwTextFlusher;
-	m_textFlusher->Init(m_hwDevice);
+// 	m_textFlusher = new SrHwTextFlusher;
+// 	m_textFlusher->Init(m_hwDevice);
 	
 	m_gpuTimers.assign(eHt_Count, gkGpuTimer());
 	
@@ -163,6 +163,7 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 
 bool SrHwD3D9Renderer::InnerShutdownRenderer()
 {
+	GtLogInfo("[D3D9 Hw Renderer] Shutting Down.");
 
 	m_rhzVertexDecl->Release();
 	m_defaultVertexDecl->Release();
@@ -176,6 +177,7 @@ bool SrHwD3D9Renderer::InnerShutdownRenderer()
 		if (m_hwShaders[i])
 		{
 			m_hwShaders[i]->Shutdown();
+			delete m_hwShaders[i];
 		}		
 	}
 
@@ -184,6 +186,7 @@ bool SrHwD3D9Renderer::InnerShutdownRenderer()
 		if (m_hwRTs[i])
 		{
 			m_hwRTs[i]->Shutdown();
+			delete m_hwRTs[i];
 		}
 	}
 
@@ -191,15 +194,29 @@ bool SrHwD3D9Renderer::InnerShutdownRenderer()
 	for (uint32 i=0; i < m_hwTextures.size(); ++i)
 	{
 		static_cast<IDirect3DTexture9*>(m_hwTextures[i])->Release();
+		GtLog("[D3D9 Hw Renderer] Release Binded Texture[0x%x]", m_hwTextures[i]);
 	}
+
+	for (uint32 i=0; i < m_bindVBs.size(); ++i)
+	{
+		m_bindVBs[i]->Release();
+		GtLog("[D3D9 Hw Renderer] Release Binded VB[0x%x]", m_bindVBs[i]);
+	}
+
+	for (uint32 i=0; i < m_bindIBs.size(); ++i)
+	{
+		m_bindIBs[i]->Release();
+		GtLog("[D3D9 Hw Renderer] Release Binded IB[0x%x]", m_bindIBs[i]);
+	}
+	
 
 	for (uint32 i=0; i < m_gpuTimers.size(); ++i)
 	{
 		m_gpuTimers[i].destroy();
 	}
 
-	m_textFlusher->Destroy();
-	delete m_textFlusher;
+// 	m_textFlusher->Destroy();
+// 	delete m_textFlusher;
 
 	m_backBuffer->Release();
 
@@ -208,6 +225,8 @@ bool SrHwD3D9Renderer::InnerShutdownRenderer()
 
 	if( m_d3d9 != NULL )
 		m_d3d9->Release();
+
+	GtLogInfo("[D3D9 Hw Renderer] Device Destroyed.");
 
 	return true;
 }
@@ -402,6 +421,7 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 			
 
 			m_hwTextures.push_back( static_cast<IDirect3DTexture9*>(texture->m_userData) );
+			GtLog("[D3D9 Hw Renderer] Texture[%s] -> Hw Texture[0x%x] Binded. Automipmaped.", texture->getName(), texture->m_userData);
 		}
 		m_hwDevice->SetTexture(stage, reinterpret_cast<IDirect3DTexture9*>(texture->m_userData));
 	}
@@ -447,6 +467,8 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 			(IDirect3DVertexBuffer9**)(&(primitive->vb->userData)), NULL);
 
 		UpdateVertexBuffer(primitive->vb);
+
+		GtLog("[D3D9 Hw Renderer] Hw VertexBuffer[0x%x] Binded.", primitive->vb);
 	}
 
 	if (!primitive->ib->userData)
@@ -459,6 +481,8 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 			NULL );
 
 		UpdateIndexBuffer(primitive->ib);
+
+		GtLog("[D3D9 Hw Renderer] Hw IndexBuffer[0x%x] Binded.", primitive->ib);
 	}
 
 	m_hwDevice->SetIndices( (IDirect3DIndexBuffer9*)(primitive->ib->userData) );
@@ -499,82 +523,55 @@ bool SrHwD3D9Renderer::DrawLine( const float3& from, const float3& to )
 
 void SrHwD3D9Renderer::FlushText()
 {
-	m_textFlusher->Begin();
+// HW FLUSH, THAT USING FUCK D3DX
+// 	m_textFlusher->Begin();
+// 
+// 	SrTextLines::iterator it = m_textLines.begin();
+// 	for ( ; it != m_textLines.end(); ++it )
+// 	{
+// 		RECT rc;
+// 		rc.left = it->pos.x;
+// 		rc.top = it->pos.y;
+// 
+// 		m_textFlusher->DrawTextLine(rc, NULL, it->color, it->text.c_str(), it->size == 0 );
+// 	}
+// 
+// 	m_textFlusher->End();
+
+
+// Try HDC
+	HDC hdc ;
+	HRESULT res = m_backBuffer->GetDC(&hdc);
+	if (res!=S_OK)
+	{
+		return;
+	}
 
 	SrTextLines::iterator it = m_textLines.begin();
 	for ( ; it != m_textLines.end(); ++it )
 	{
-		RECT rc;
-		rc.left = it->pos.x;
-		rc.top = it->pos.y;
+		RECT rect;
+		rect.left = it->pos.x;
+		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
+		rect.top = it->pos.y;
+		rect.bottom = it->pos.y+20;
+		int len = (int)strlen(it->text.c_str());
 
-		m_textFlusher->DrawTextLine(rc, NULL, it->color, it->text.c_str(), it->size == 0 );
-	}
-
-	m_textFlusher->End();
-}
-
-SrVertexBuffer* SrHwD3D9Renderer::AllocateVertexBuffer( uint32 elementSize, uint32 count, bool fastmode /*= false */ )
-{
-	SrVertexBuffer* created = IRenderer::AllocateVertexBuffer(elementSize, count, fastmode);
-	return created;
-}
-bool SrHwD3D9Renderer::DeleteVertexBuffer( SrVertexBuffer* target )
-{
-	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
-	{
-		if( m_vertexBuffers[i] == target )
+		if ( it->size == 0)
 		{
-			_mm_free( m_vertexBuffers[i]->data );
-
-			if (target->userData)
-			{
-				((IDirect3DVertexBuffer9*)(target->userData))->Release();
-			}
-
-			delete (m_vertexBuffers[i]);
-			m_vertexBuffers[i] = NULL;
-
-			// 卸载了就跳出啊！
-			return true;
+			SelectObject(hdc, m_bigFont);
 		}
-	}
-
-	return false;
-}
-
-SrIndexBuffer* SrHwD3D9Renderer::AllocateIndexBuffer( uint32 count )
-{
-	SrIndexBuffer* created = IRenderer::AllocateIndexBuffer( count );
-	return created;
-}
-
-bool SrHwD3D9Renderer::DeleteIndexBuffer( SrIndexBuffer* target )
-{
-	for (uint32 i=0; i < m_indexBuffers.size(); ++i)
-	{
-		if( m_indexBuffers[i] == target )
+		else
 		{
-			if (m_indexBuffers[i]->data)
-			{
-				delete[] m_indexBuffers[i]->data;
-				m_indexBuffers[i]->data = NULL;
-			}
-
-			if (target->userData)
-			{
-				((IDirect3DIndexBuffer9*)(target->userData))->Release();
-			}
-
-			delete m_indexBuffers[i];
-			m_indexBuffers[i] = NULL;
-
-			// 卸载了就跳出啊！
-			return true;
+			SelectObject(hdc, m_smallFont);
 		}
+
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, it->color);
+		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
 	}
 
-	return false;
+	m_backBuffer->ReleaseDC(hdc);
 }
 
 bool SrHwD3D9Renderer::UpdateVertexBuffer( SrVertexBuffer* target )

@@ -34,28 +34,12 @@ SrSoftRenderer::SrSoftRenderer(void):IRenderer(eRt_Software),
 	m_renderState(0)
 {
 	m_textureStages.assign( SR_MAX_TEXTURE_STAGE_NUM , NULL );
-
-	// create HFONT
-	LOGFONT lfont;
-	memset   (&lfont,   0,   sizeof   (LOGFONT));   
-	lfont.lfHeight=14;
-	lfont.lfWeight=800;   
-	lfont.lfClipPrecision=CLIP_LH_ANGLES; 
-	lfont.lfQuality = NONANTIALIASED_QUALITY; // THIS COULD BOOST
-	strcpy_s( lfont.lfFaceName, "consolas" );
-	m_bigFont = CreateFontIndirect( &lfont );
-
-	lfont.lfHeight=12;
-	lfont.lfWeight=0;  
-	m_smallFont = CreateFontIndirect( &lfont );
 	m_normalizeVBAllocSize = 0;
 }
 
 
 SrSoftRenderer::~SrSoftRenderer(void)
 {
-	DeleteObject(m_smallFont);
-	DeleteObject(m_bigFont);
 }
 
 bool SrSoftRenderer::InnerInitRenderer( HWND hWnd, int width, int height, int bpp )

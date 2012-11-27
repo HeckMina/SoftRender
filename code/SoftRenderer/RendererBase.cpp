@@ -14,11 +14,27 @@ IRenderer::IRenderer( ERendererType type ):m_rendererType(type)
 {
 	m_matrixStack.assign( eMd_Count, float44::CreateIdentity() );
 	m_frameCount = 0;
+
+	// create HFONT
+	LOGFONT lfont;
+	memset   (&lfont,   0,   sizeof   (LOGFONT));   
+	lfont.lfHeight=14;
+	lfont.lfWeight=800;   
+	lfont.lfClipPrecision=CLIP_LH_ANGLES; 
+	lfont.lfQuality = NONANTIALIASED_QUALITY; // THIS COULD BOOST
+	strcpy_s( lfont.lfFaceName, "consolas" );
+	m_bigFont = CreateFontIndirect( &lfont );
+
+	lfont.lfHeight=12;
+	lfont.lfWeight=0;  
+	m_smallFont = CreateFontIndirect( &lfont );
+
 }
 
 IRenderer::~IRenderer( void )
 {
-
+	DeleteObject(m_smallFont);
+	DeleteObject(m_bigFont);
 }
 
 SrVertexBuffer* IRenderer::AllocateVertexBuffer(uint32 elementSize, uint32 count, bool fastmode)
@@ -49,18 +65,22 @@ SrVertexBuffer* IRenderer::AllocateVertexBuffer(uint32 elementSize, uint32 count
 
 bool IRenderer::DeleteVertexBuffer( SrVertexBuffer* target )
 {
-	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
+	if (target)
 	{
-		if( m_vertexBuffers[i] == target )
+		for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
 		{
-			_mm_free( m_vertexBuffers[i]->data );
-			delete (m_vertexBuffers[i]);
-			m_vertexBuffers[i] = NULL;
+			if( m_vertexBuffers[i] == target )
+			{
+				_mm_free( m_vertexBuffers[i]->data );
+				delete (m_vertexBuffers[i]);
+				m_vertexBuffers[i] = NULL;
 
-			// 卸载了就跳出啊！
-			return true;
+				// 卸载了就跳出啊！
+				return true;
+			}
 		}
 	}
+
 
 	return false;
 }
@@ -96,23 +116,25 @@ SrIndexBuffer* IRenderer::AllocateIndexBuffer( uint32 count )
 
 bool IRenderer::DeleteIndexBuffer( SrIndexBuffer* target )
 {
-	for (uint32 i=0; i < m_indexBuffers.size(); ++i)
+	if (target)
 	{
-		if( m_indexBuffers[i] == target )
+		for (uint32 i=0; i < m_indexBuffers.size(); ++i)
 		{
-			if (m_indexBuffers[i]->data)
+			if( m_indexBuffers[i] == target )
 			{
-				delete[] m_indexBuffers[i]->data;
-				m_indexBuffers[i]->data = NULL;
-			}			
-			delete m_indexBuffers[i];
-			m_indexBuffers[i] = NULL;
+				if (m_indexBuffers[i]->data)
+				{
+					delete[] m_indexBuffers[i]->data;
+					m_indexBuffers[i]->data = NULL;
+				}			
+				delete m_indexBuffers[i];
+				m_indexBuffers[i] = NULL;
 
-			// 卸载了就跳出啊！
-			return true;
+				// 卸载了就跳出啊！
+				return true;
+			}
 		}
 	}
-
 	return false;
 }
 
@@ -151,22 +173,12 @@ bool IRenderer::ShutdownRenderer()
 	// 卸载VB
 	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
 	{
-		if( m_vertexBuffers[i] != NULL )
-		{
-			_mm_free( m_vertexBuffers[i]->data);
-			delete m_vertexBuffers[i];
-			m_vertexBuffers[i] = NULL;
-		}
+		DeleteVertexBuffer( m_vertexBuffers[i] );
 	}
 
 	for (uint32 i=0; i < m_indexBuffers.size(); ++i)
 	{
-		if( m_indexBuffers[i] != NULL )
-		{
-			delete[] m_indexBuffers[i]->data;
-			delete m_indexBuffers[i];
-			m_indexBuffers[i] = NULL;
-		}
+		DeleteIndexBuffer( m_indexBuffers[i] );
 	}
 	return InnerShutdownRenderer();
 }

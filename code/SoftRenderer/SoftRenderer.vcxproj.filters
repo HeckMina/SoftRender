@@ -202,9 +202,6 @@
     <ClInclude Include="RendererBase.h">
       <Filter>RenderSys</Filter>
     </ClInclude>
-    <ClInclude Include="SrHwTextFlusher.h">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClInclude>
     <ClInclude Include="SrGpuTimer.h">
       <Filter>RenderSys\HardwareRenderer</Filter>
     </ClInclude>
@@ -335,9 +332,6 @@
     </ClCompile>
     <ClCompile Include="RendererBase.cpp">
       <Filter>RenderSys</Filter>
-    </ClCompile>
-    <ClCompile Include="SrHwTextFlusher.cpp">
-      <Filter>RenderSys\HardwareRenderer</Filter>
     </ClCompile>
     <ClCompile Include="SrGpuTimer.cpp">
       <Filter>RenderSys\HardwareRenderer</Filter>

@@ -124,6 +124,9 @@ protected:
 	SrTextLines m_textLines;
 	HWND m_hWnd;
 
+	HFONT m_bigFont;
+	HFONT m_smallFont;
+
 	
 };
 

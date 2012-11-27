@@ -97,8 +97,8 @@ SoftRenderApp::~SoftRenderApp(void)
 BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 {
 	g_logger = new SrLogger();
-	GtLog("///////////////////////////////////");
-	GtLog("SoftRenderer Init...");
+	GtLogInfo("///////////////////////////////////\n");
+	GtLogInfo("SoftRenderer Init...\n\n");
 
 	WNDCLASSEX wcex;
 
@@ -147,7 +147,7 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	gEnv = new GlobalEnvironment;
 
 	// 创建资源管理器
-	GtLog("Creating ResourceManger...");
+	GtLogInfo("Creating ResourceManger...");
 	gEnv->resourceMgr = new SrResourceManager;
 	GtLog("- Loading Shader List...");
 	LoadShaderList();
@@ -155,7 +155,7 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	gEnv->resourceMgr->InitDefaultMedia();
 
 	// 创建Render上下文
-	GtLog("Creating Render Context...");
+	GtLogInfo("Creating Render Context...");
 	g_context = new SrRendContext(createWidth, createHeight, 32);
 
 	
@@ -165,23 +165,24 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
  	m_pRenderer = m_pSwRenderer;
 	gEnv->renderer = m_pRenderer;
 
-	GtLog("Creating D3D9 Hw Renderer...");
+	GtLogInfo("Creating Sw Renderer...");
 	m_pSwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
-	GtLog("Creating Sw Renderer...");
+	
+	GtLogInfo("Creating D3D9 Hw Renderer...");
 	m_pHwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
 
 	
 	gEnv->timer = new SrTimer;
 	gEnv->timer->Init();
-	GtLog("Timer initialized.");
+	GtLogInfo("[Timer] initialized.");
 
 	gEnv->inputSys = new SrInputManager;
 	gEnv->inputSys->Init(m_hWnd);
 	gEnv->inputSys->AddListener(this);
-	GtLog("Input Manager initialized.");
+	GtLogInfo("[InputManager] initialized.");
 
 	gEnv->profiler = new SrProfiler;
-	GtLog("Profiler initialized.");
+	GtLogInfo("[Profiler] initialized.");
 
 	// 显示窗口
 	ShowWindow(m_hWnd, SW_SHOWNORMAL);
@@ -191,19 +192,20 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	SetFocus(m_hWnd);
 	SetForegroundWindow(m_hWnd);
 
+	GtLogInfo("Math Lib Struct Size:");
 #define OUTPUT_SIZE( x ) \
-	GtLog(#x" size: %d\n", sizeof(x));
+	GtLog("-"#x" size: %d", sizeof(x));
 
 	OUTPUT_SIZE( float2 )
-		OUTPUT_SIZE( float3 )
-		OUTPUT_SIZE( float4 )
-		OUTPUT_SIZE( float33 )
-		OUTPUT_SIZE( float44 )
-		OUTPUT_SIZE( Quat )
+	OUTPUT_SIZE( float3 )
+	OUTPUT_SIZE( float4 )
+	OUTPUT_SIZE( float33 )
+	OUTPUT_SIZE( float44 )
+	OUTPUT_SIZE( Quat )
 
 
-	GtLog("Base system initialized.");
-	GtLog("///////////////////////////////////");
+	GtLogInfo("Base system initialized.");
+	GtLogInfo("///////////////////////////////////\n\n");
 	SrApps::iterator it = m_tasks.begin();
 	for (; it != m_tasks.end(); ++it)
 	{

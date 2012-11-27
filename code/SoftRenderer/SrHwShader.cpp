@@ -25,7 +25,7 @@ void SrHwShader::Init(IDirect3DDevice9* device)
 	{
 		if ( FAILED(device->CreateVertexShader( (const DWORD*)(file.Data()), &m_vs )) )
 		{
-			OutputDebugString( "VS Creation failed." );
+			GtLog("[D3D9 Hw Renderer] Hw VShader [%s] Compile Failed.", m_name.c_str());
 		}
 	}
 	file.Close();
@@ -35,10 +35,12 @@ void SrHwShader::Init(IDirect3DDevice9* device)
 	{
 		if ( FAILED(device->CreatePixelShader( (const DWORD*)(file.Data()), &m_ps )) )
 		{
-			OutputDebugString( "PS Creation failed." );
+			GtLog("[D3D9 Hw Renderer] Hw PShader [%s] Compile Failed.", m_name.c_str());
 		}
 	}
 	file.Close();
+
+	GtLog("[D3D9 Hw Renderer] Hw Shader [%s] Compiled.", m_name.c_str());
 }
 
 void SrHwShader::Shutdown()
@@ -47,12 +49,14 @@ void SrHwShader::Shutdown()
 	if (m_vs)
 	{
 		m_vs->Release();
+		GtLog("[D3D9 Hw Renderer] Hw VShader [%s] Destroyed.", m_name.c_str());
 		m_vs = NULL;
 	}
 
 	if (m_ps)
 	{
 		m_ps->Release();
+		GtLog("[D3D9 Hw Renderer] Hw PShader [%s] Destroyed.", m_name.c_str());
 		m_ps = NULL;
 	}
 }

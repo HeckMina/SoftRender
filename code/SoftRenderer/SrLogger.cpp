@@ -42,7 +42,27 @@ void SrLogger::Log( const char* line )
 
 		char* buffer = new char[length + 100];
 
-		sprintf(buffer, "[%d/%d/%d %d:%d(+8)] %s \r\n", time.wYear, time.wMonth, time.wDay, (time.wHour + 8) % 24, time.wMinute, line);
+		int infoType = 0;
+		static HANDLE consolehwnd;
+		consolehwnd = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		switch(line[1])
+		{
+		case '0':
+			SetConsoleTextAttribute(consolehwnd, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
+			break;
+		case '1':
+			SetConsoleTextAttribute(consolehwnd, FOREGROUND_BLUE | FOREGROUND_GREEN );
+			break;
+		case '2':
+			SetConsoleTextAttribute(consolehwnd, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY );
+			break;
+		case '3':
+			SetConsoleTextAttribute(consolehwnd, FOREGROUND_RED | FOREGROUND_INTENSITY );
+			break;
+		}
+
+		sprintf(buffer, "[%d/%d/%d %d:%d(+8)] %s \r\n", time.wYear, time.wMonth, time.wDay, (time.wHour + 8) % 24, time.wMinute, line + 2);
 
 
 		memcpy( m_data + m_size, buffer, strlen(buffer) );

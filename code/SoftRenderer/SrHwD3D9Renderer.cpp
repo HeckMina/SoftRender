@@ -84,6 +84,7 @@ bool SrHwD3D9Renderer::InnerInitRenderer( HWND hWnd, int width, int height, int 
 		MessageBox(hWnd,"无法创建DX设备","",MB_OK);
 		return false;
 	}
+	GtLog("[D3D9 Hw Renderer] Device Created.");
 
 	m_hwShaders.assign(eInS_Count, NULL);
 	m_hwShaders[eInS_line] = new SrHwShader("line", NULL );

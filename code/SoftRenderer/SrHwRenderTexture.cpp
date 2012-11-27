@@ -34,6 +34,7 @@ void SrHwRenderTexture::Init( struct IDirect3DDevice9* device )
 
 
 	device->CreateTexture( m_width, m_height, 0, D3DUSAGE_RENDERTARGET, format, D3DPOOL_DEFAULT, (IDirect3DTexture9**)(&m_userData), NULL );
+	GtLog("[D3D9 Hw Renderer] Hw RenderTexture [%s] Created. width= %d height= %d", m_name.c_str(), m_width, m_height);
 }
 
 void SrHwRenderTexture::Shutdown()
@@ -41,6 +42,7 @@ void SrHwRenderTexture::Shutdown()
 	if (m_userData)
 	{
 		((IDirect3DTexture9*)m_userData)->Release();
+		GtLog("[D3D9 Hw Renderer] Hw RenderTexture [%s] Destroyed.", m_name.c_str());
 	}
 	m_userData = NULL;
 }

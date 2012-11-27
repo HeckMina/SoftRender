@@ -330,7 +330,8 @@ void SrPhongShader::ProcessPixel( uint32* pOut, const void* pIn, const SrShaderC
 	float3 viewWS = context->matrixs[eMd_ViewInverse].GetTranslate() - in->worldpos_tx.xyz;
 	viewWS.normalize();
 
-	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor() * (normalDir.y * 0.4f + 0.6f);
+	float4 diffuseAcc = gEnv->sceneMgr->GetSkyLightColor();
+	diffuseAcc *= (normalDir.y * 0.4f + 0.6f);
 	float4 specularAcc(0.f);
 
 	CalcLights(context, in->worldpos_tx.xyz, normalDir, viewWS, diffuseAcc, specularAcc);

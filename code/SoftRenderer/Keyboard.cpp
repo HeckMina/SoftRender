@@ -1,5 +1,4 @@
 #include "StdAfx.h"
-#include <dinput.h>
 #include "Keyboard.h"
 
 #include "mmgr/mmgr.h"

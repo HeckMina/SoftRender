@@ -13,7 +13,7 @@
 
 #include "prerequisite.h"
 #include <dinput.h>
-
+#include <dinputd.h>
 
 struct SInputSymbol;
 struct SKeyState;

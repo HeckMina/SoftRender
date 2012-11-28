@@ -78,12 +78,12 @@ void SrMesh::ParseObjFile()
 void SrMesh::Destroy()
 {
 	
-	for (uint32 i=0; i < m_primitives.size(); ++i)
-	{
-		gEnv->renderer->DeleteVertexBuffer( m_primitives[i].vb );
-		gEnv->renderer->DeleteIndexBuffer( m_primitives[i].ib );
-	}
-	m_primitives.clear();
+// 	for (uint32 i=0; i < m_primitives.size(); ++i)
+// 	{
+// 		gEnv->renderer->DeleteVertexBuffer( m_primitives[i].vb );
+// 		gEnv->renderer->DeleteIndexBuffer( m_primitives[i].ib );
+// 	}
+// 	m_primitives.clear();
 
 	GtLog("[ResourceManager] Mesh[%s] Destroyed.", getName() );
 }

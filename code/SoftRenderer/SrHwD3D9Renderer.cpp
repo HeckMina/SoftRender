@@ -4,7 +4,7 @@
 #include "SrTexture.h"
 #include "SrMaterial.h"
 #include "SrRasterizer.h"
-#include "SrHwTextFlusher.h"
+//#include "SrHwTextFlusher.h"
 #include "SrProfiler.h"
 #include "SrCamera.h"
 #include "SrHwRenderTexture.h"
@@ -421,7 +421,7 @@ bool SrHwD3D9Renderer::SetTextureStage( const SrTexture* texture, int stage )
 			
 
 			m_hwTextures.push_back( static_cast<IDirect3DTexture9*>(texture->m_userData) );
-			GtLog("[D3D9 Hw Renderer] Texture[%s] -> Hw Texture[0x%x] Binded. Automipmaped.", texture->getName(), texture->m_userData);
+			//GtLog("[D3D9 Hw Renderer] Texture[%s] -> Hw Texture[0x%x] Binded. Automipmaped.", texture->getName(), texture->m_userData);
 		}
 		m_hwDevice->SetTexture(stage, reinterpret_cast<IDirect3DTexture9*>(texture->m_userData));
 	}
@@ -468,7 +468,7 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 
 		UpdateVertexBuffer(primitive->vb);
 
-		GtLog("[D3D9 Hw Renderer] Hw VertexBuffer[0x%x] Binded.", primitive->vb);
+		//GtLog("[D3D9 Hw Renderer] Hw VertexBuffer[0x%x] Binded.", primitive->vb);
 	}
 
 	if (!primitive->ib->userData)
@@ -482,7 +482,7 @@ bool SrHwD3D9Renderer::DrawPrimitive( SrPrimitve* primitive )
 
 		UpdateIndexBuffer(primitive->ib);
 
-		GtLog("[D3D9 Hw Renderer] Hw IndexBuffer[0x%x] Binded.", primitive->ib);
+		//GtLog("[D3D9 Hw Renderer] Hw IndexBuffer[0x%x] Binded.", primitive->ib);
 	}
 
 	m_hwDevice->SetIndices( (IDirect3DIndexBuffer9*)(primitive->ib->userData) );

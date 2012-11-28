@@ -121,8 +121,8 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 
 	m_hInst = hInstance; // Store instance handle in our global variable
 
-	const int createWidth = 640;
-	const int createHeight = 360;
+	const int createWidth = 1280;
+	const int createHeight = 720;
 
 	m_hWnd = CreateWindow("SoftRenderer Window Class", "SoftRenderer", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, createWidth, createHeight, NULL, NULL, hInstance, NULL);

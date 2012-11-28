@@ -12,7 +12,7 @@ float4 ps_main( vert2frag IN ) : COLOR0
 	float depth = tex2D(tex1, IN.texcoord0.xy ).x;
 
 	OUT = colorBlur;// + 0.15 *  float4(0.5, 0.69, 0.84, 1);
-	OUT.a = saturate(depth - 0.03) * 30 + saturate(0.005 - depth) * 300;
+	OUT.a = saturate(depth - 0.01) * 120 + saturate(0.002 - depth) * 900;
 
 	// debug depth
 	//OUT.xyz = ( depth * IN.texcoord1.xyz + eyePos.xyz );

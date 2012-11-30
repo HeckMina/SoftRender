@@ -36,26 +36,11 @@
     <Filter Include="AppLayer\App">
       <UniqueIdentifier>{79cfe2ed-f7e0-4c8d-a55f-fbc3a92505ab}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RenderSys\Threading">
-      <UniqueIdentifier>{cb4948f9-dec1-4bcb-9f71-c6056c996fff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RenderSys\SoftwareRenderer">
       <UniqueIdentifier>{53171b20-7668-494b-9214-f8703dd3b144}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RenderSys\HardwareRenderer">
-      <UniqueIdentifier>{386ffb8e-7e41-44af-9606-ed05da5ada52}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RenderSys\SoftwareRenderer\swShader">
       <UniqueIdentifier>{131c4f7c-b557-4ba2-ad13-e5289435735f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RenderSys\HardwareRenderer\hwShader">
-      <UniqueIdentifier>{6cfe964c-4437-4ea3-975b-e1ec82bae6f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RenderSys\HardwareRenderer\hwShader\forward">
-      <UniqueIdentifier>{6b26378d-c8fd-4b1d-bad7-153148a6cd79}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RenderSys\HardwareRenderer\hwShader\include">
-      <UniqueIdentifier>{ee944496-6faf-426c-839f-c7b5ed21e818}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -64,27 +49,6 @@
     </None>
     <None Include="SoftRenderer.ico">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\blur.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\dof.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\jitaa.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\hair.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader\forward</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\line.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader\forward</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\default.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader\forward</Filter>
-    </None>
-    <None Include="..\..\bin32\shader\hwcode\skin.hlsl">
-      <Filter>RenderSys\HardwareRenderer\hwShader\forward</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -175,12 +139,6 @@
     <ClInclude Include="SrEntity.h">
       <Filter>AppLayer\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="SrRasTaskDispatcher.h">
-      <Filter>RenderSys\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="SrRasTasks.h">
-      <Filter>RenderSys\Threading</Filter>
-    </ClInclude>
     <ClInclude Include="SrDefaultMedia.h">
       <Filter>RenderSys\Resource</Filter>
     </ClInclude>
@@ -193,53 +151,17 @@
     <ClInclude Include="SrSponzaApp.h">
       <Filter>AppLayer\App</Filter>
     </ClInclude>
-    <ClInclude Include="SrRasterizer.h">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="SrHwD3D9Renderer.h">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClInclude>
     <ClInclude Include="RendererBase.h">
       <Filter>RenderSys</Filter>
     </ClInclude>
-    <ClInclude Include="SrGpuTimer.h">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClInclude>
     <ClInclude Include="SrRenderContext.h">
       <Filter>RenderSys</Filter>
-    </ClInclude>
-    <ClInclude Include="SrFragmentBuffer.h">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="SrSoftRenderer.h">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
     </ClInclude>
     <ClInclude Include="SrShader.h">
       <Filter>RenderSys\Resource</Filter>
     </ClInclude>
     <ClInclude Include="SrSwShader.h">
       <Filter>RenderSys\SoftwareRenderer\swShader</Filter>
-    </ClInclude>
-    <ClInclude Include="SrHwRenderTexture.h">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="SrHwShader.h">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\constant_def.h">
-      <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\fwconstant_def.h">
-      <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\postprocess.h">
-      <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\shading_lib.h">
-      <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\vertex_process.h">
-      <Filter>RenderSys\HardwareRenderer\hwShader\include</Filter>
     </ClInclude>
     <ClInclude Include="SrLogger.h">
       <Filter>AppLayer\System</Filter>
@@ -303,12 +225,6 @@
     <ClCompile Include="SrScene.cpp">
       <Filter>AppLayer\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="SrRasTaskDispatcher.cpp">
-      <Filter>RenderSys\Threading</Filter>
-    </ClCompile>
-    <ClCompile Include="SrRasTasks.cpp">
-      <Filter>RenderSys\Threading</Filter>
-    </ClCompile>
     <ClCompile Include="SrDefaultMedia.cpp">
       <Filter>RenderSys\Resource</Filter>
     </ClCompile>
@@ -317,39 +233,6 @@
     </ClCompile>
     <ClCompile Include="SrSponzaApp.cpp">
       <Filter>AppLayer\App</Filter>
-    </ClCompile>
-    <ClCompile Include="SrRasterize_Clip.cpp">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrRasterizer_Algo.cpp">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrRasterizer.cpp">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrHwD3D9Renderer.cpp">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererBase.cpp">
-      <Filter>RenderSys</Filter>
-    </ClCompile>
-    <ClCompile Include="SrGpuTimer.cpp">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrRenderContext.cpp">
-      <Filter>RenderSys</Filter>
-    </ClCompile>
-    <ClCompile Include="SrFragmentBuffer.cpp">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrSoftRenderer.cpp">
-      <Filter>RenderSys\SoftwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrHwRenderTexture.cpp">
-      <Filter>RenderSys\HardwareRenderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SrHwShader.cpp">
-      <Filter>RenderSys\HardwareRenderer</Filter>
     </ClCompile>
     <ClCompile Include="SrLogger.cpp">
       <Filter>AppLayer\System</Filter>

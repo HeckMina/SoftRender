@@ -23,6 +23,9 @@
 // SIMD加速
 #define SR_USE_SIMD
 
+// Windows Header Files:
+#include <windows.h>
+
 //////////////////////////////////////////////////////////////////////////
 // stl
 #include <iostream>
@@ -58,7 +61,6 @@
 #include "util/memfile.h"
 #include "util/event.h"
 
-#include "SrLogger.h"
 
 //////////////////////////////////////////////////////////////////////////
 // 渲染规格配置
@@ -80,13 +82,22 @@
 #define SR_UICOLOR_MAIN		 0xaf7333
 #define SR_UICOLOR_NORMAL    0xcccccc
 
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(p)       { if (p) { delete (p);     (p)=NULL; } }
+#endif    
+#ifndef SAFE_DELETE_ARRAY
+#define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p);   (p)=NULL; } }
+#endif    
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // 置前声明
 class IRenderer;
 class SrInputManager;
 struct SrRendPrimitve;
-class SrProfiler;
+class IProfiler;
 struct SrShaderContext;
 struct SrMaterial;
 class IResourceManager;
@@ -97,6 +108,8 @@ class SrResource;
 class SrMesh;
 class SrShader;
 class SrDefaultMediaPack;
+struct ILogger;
+struct SrRendContext;
 
 typedef std::vector<SrShader*> SrShaderList;
 typedef std::vector<HMODULE> SrHandleList;
@@ -112,11 +125,72 @@ struct GlobalEnvironment
 	IRenderer*				renderer;
 	SrTimer*				timer;
 	SrInputManager*			inputSys;
-	SrProfiler*				profiler;
+	IProfiler*				profiler;
 	IResourceManager*		resourceMgr;
 	SrScene*				sceneMgr;
+	ILogger*				logger;
+	SrRendContext*			context;
 };
 extern GlobalEnvironment* gEnv;
+
+
+#include "SrLogger.h"
+//	 Simple logs of data with low verbosity.
+inline void GtLog( const char* format, ... )
+{
+	if (gEnv->logger)		
+	{
+		va_list args;
+		va_start(args,format);
+		char buffer[1024];
+		strcpy(buffer, "#0");
+		strcat(buffer, format);
+		gEnv->logger->Log( buffer, args );
+		va_end(args);
+	}
+}
+
+inline void GtLogInfo( const char* format, ... )
+{
+	if (gEnv->logger)		
+	{
+		va_list args;
+		va_start(args,format);
+		char buffer[1024];
+		strcpy(buffer, "#1");
+		strcat(buffer, format);
+		gEnv->logger->Log( buffer, args );
+		va_end(args);
+	}
+}
+
+inline void GtLogWarning( const char* format, ... )
+{
+	if (gEnv->logger)		
+	{
+		va_list args;
+		va_start(args,format);
+		char buffer[1024];
+		strcpy(buffer, "#2");
+		strcat(buffer, format);
+		gEnv->logger->Log( buffer, args );
+		va_end(args);
+	}
+}
+
+inline void GtLogError( const char* format, ... )
+{
+	if (gEnv->logger)		
+	{
+		va_list args;
+		va_start(args,format);
+		char buffer[1024];
+		strcpy(buffer, "#3");
+		strcat(buffer, format);
+		gEnv->logger->Log( buffer, args );
+		va_end(args);
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////
 // 枚举
@@ -408,6 +482,8 @@ typedef std::vector<SrPrimitve> SrPrimitives;					///< 几何体队列
 typedef std::vector<SrLight*> SrLightList;						///< 灯光队列
 typedef std::vector<float44> SrMatrixArray;						///< 矩阵队列
 typedef std::vector<const SrTexture*> SrBitmapArray;			///< 纹理访问队列
+typedef std::vector<SrVertexBuffer*> SrVertexBufferArray;		///< VB队列
+typedef std::vector<SrIndexBuffer*> SrIndexBufferArray;			///< IB队列
 
 /**
  *@brief 通用Constant Buffer
@@ -444,6 +520,14 @@ struct IResourceManager
 
 	virtual void				InitDefaultMedia() =0;
 	virtual SrDefaultMediaPack*	getDefaultMediaPack() =0;
+
+	// Buffer申请
+	virtual SrVertexBuffer* AllocateVertexBuffer(uint32 elementSize, uint32 count, bool fastmode = false) =0;
+	virtual bool DeleteVertexBuffer(SrVertexBuffer* target) =0;
+	virtual SrIndexBuffer*	AllocateIndexBuffer(uint32 count) =0;
+	virtual bool DeleteIndexBuffer(SrIndexBuffer* target) =0;
+
+	virtual void CleanBufferBinding() =0;
 };
 
 #endif // prerequisite_h__

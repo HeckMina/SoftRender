@@ -28,8 +28,6 @@ struct SrTextLine
 	uint32 size;
 };
 typedef std::vector<SrTextLine> SrTextLines;
-typedef std::vector<SrVertexBuffer*> SrVertexBufferArray;		///< VB队列
-typedef std::vector<SrIndexBuffer*> SrIndexBufferArray;			///< IB队列
 
 enum EHwTimerElement
 {
@@ -51,12 +49,17 @@ enum ERendererType
 class IRenderer
 {
 public:
-	IRenderer(ERendererType type);
-	virtual ~IRenderer(void);
+	IRenderer::IRenderer( ERendererType type ):m_rendererType(type)
+	{
+		m_matrixStack.assign( eMd_Count, float44::CreateIdentity() );
+		m_frameCount = 0;
+	}
+	virtual ~IRenderer(void)
+	{
+
+	}
 
 	// 启动，关闭函数
-	bool InitRenderer(HWND hWnd, int width, int height, int bpp);
-	bool ShutdownRenderer();
 	virtual bool Resize(uint32 width, uint32 height)=0;
 
 	// 帧控制函数
@@ -73,18 +76,8 @@ public:
 	virtual bool SetTextureStage( const SrTexture* texture, int stage )=0;
 	virtual void ClearTextureStage()=0;
 
-	// Buffer申请
-	virtual SrVertexBuffer* AllocateVertexBuffer(uint32 elementSize, uint32 count, bool fastmode = false);
-	virtual bool DeleteVertexBuffer(SrVertexBuffer* target);
-	virtual SrIndexBuffer*	AllocateIndexBuffer(uint32 count);
-	virtual bool DeleteIndexBuffer(SrIndexBuffer* target);
-
-	virtual SrVertexBuffer* AllocateNormalizedVertexBuffer( uint32 count, bool fastmode = false ) {return NULL;}
-
 	virtual bool UpdateVertexBuffer(SrVertexBuffer* target) {return true;}
 	virtual bool UpdateIndexBuffer(SrIndexBuffer* target) {return true;}
-
-	bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT);
 
 	// 渲染调用
 	virtual bool DrawPrimitive( SrPrimitve* primitive )=0;
@@ -98,9 +91,37 @@ public:
 	virtual void SetGpuMarkEnd(EHwTimerElement element) {}
 	virtual float GetGpuTime(EHwTimerElement element) {return 0;}
 
-	// 矩阵组
-	void SetMatrix( EMatrixDefine index, const float44& matrix);
-	float44 GetMatrix( EMatrixDefine index );
+	void SetMatrix( EMatrixDefine index, const float44& matrix )
+	{
+		if (index < eMd_Count)
+		{
+			m_matrixStack[index] = matrix;
+		}	
+	}
+
+	float44 GetMatrix( EMatrixDefine index )
+	{
+		float44 ret = float44::CreateIdentity();
+		if (index < eMd_Count)
+		{
+			ret = m_matrixStack[index];
+		}
+
+		return ret;
+	}
+
+	bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT)
+	{
+// 		SrTextLine line;
+// 		line.text = std::string(str);
+// 		line.pos = int2(x,y);
+// 		line.size = size;
+// 		line.color = color;
+// 
+// 		m_textLines.push_back( line );
+
+		return true;
+	}
 
 	// TEX2D for swRenderer
 	virtual uint32 Tex2D(float2& texcoord, const SrTexture* texture ) const =0;
@@ -111,18 +132,13 @@ public:
 
 	ERendererType m_rendererType;
 
-protected:
-	virtual bool InnerInitRenderer(HWND hWnd, int width, int height, int bpp) =0;
-	virtual bool InnerShutdownRenderer() =0;
+	virtual bool InitRenderer(HWND hWnd, int width, int height, int bpp) =0;
+	virtual bool ShutdownRenderer() =0;
 
 protected:
-	SrVertexBufferArray m_vertexBuffers;
-	SrIndexBufferArray	m_indexBuffers;
 	SrMatrixArray m_matrixStack;
 	
 	uint32 m_frameCount;
-	SrTextLines m_textLines;
-	HWND m_hWnd;
 
 	HFONT m_bigFont;
 	HFONT m_smallFont;

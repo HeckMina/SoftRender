@@ -1,12 +1,10 @@
 #include "StdAfx.h"
 #include "SoftRenderApp.h"
 #include "resource.h"
-#include "SrSoftRenderer.h"
 #include <MMSystem.h>
 #include "SrMesh.h"
 #include "InputManager.h"
 #include "SrProfiler.h"
-#include "SrHwD3D9Renderer.h"
 #include "SrShader.h"
 #include "SrLogger.h"
 
@@ -14,6 +12,11 @@
 
 GlobalEnvironment* gEnv = NULL;
 SrLogger* g_logger = NULL;
+SrRendContext* g_context = NULL;
+
+typedef IRenderer* (*fnLoadRenderer)(GlobalEnvironment* pgEnv);
+typedef void (*fnFreeRenderer)();
+
 // Forward declarations of functions included in this code module:
 
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -82,10 +85,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-SoftRenderApp::SoftRenderApp(void):
-	m_pRenderer(NULL),
-	m_pHwRenderer(NULL),
-	m_pSwRenderer(NULL)
+SoftRenderApp::SoftRenderApp(void)
 {
 }
 
@@ -96,7 +96,9 @@ SoftRenderApp::~SoftRenderApp(void)
 
 BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 {
-	g_logger = new SrLogger();
+	gEnv = new GlobalEnvironment;
+	gEnv->logger = new SrLogger();
+
 	GtLogInfo("///////////////////////////////////\n");
 	GtLogInfo("SoftRenderer Init...\n\n");
 
@@ -121,8 +123,8 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 
 	m_hInst = hInstance; // Store instance handle in our global variable
 
-	const int createWidth = 1280;
-	const int createHeight = 720;
+	const int createWidth = 640;
+	const int createHeight = 360;
 
 	m_hWnd = CreateWindow("SoftRenderer Window Class", "SoftRenderer", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, createWidth, createHeight, NULL, NULL, hInstance, NULL);
@@ -144,7 +146,7 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 		return FALSE;
 	}
 
-	gEnv = new GlobalEnvironment;
+	
 
 	// 创建资源管理器
 	GtLogInfo("Creating ResourceManger...");
@@ -157,20 +159,9 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	// 创建Render上下文
 	GtLogInfo("Creating Render Context...");
 	g_context = new SrRendContext(createWidth, createHeight, 32);
+	gEnv->context = g_context;
 
-	
-	m_pHwRenderer = new SrHwD3D9Renderer;
-	
- 	m_pSwRenderer = new SrSoftRenderer;
- 	m_pRenderer = m_pSwRenderer;
-	gEnv->renderer = m_pRenderer;
-
-	GtLogInfo("Creating Sw Renderer...");
-	m_pSwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
-	
-	GtLogInfo("Creating D3D9 Hw Renderer...");
-	m_pHwRenderer->InitRenderer(m_hWnd, createWidth, createHeight, 32);
-
+	InitRenderers();
 	
 	gEnv->timer = new SrTimer;
 	gEnv->timer->Init();
@@ -229,13 +220,13 @@ bool SoftRenderApp::Update()
 
 	gEnv->inputSys->Update();
 
-	if (!m_pRenderer)
+	if (!gEnv->renderer)
 	{
 		return false;
 	}	
-	m_pRenderer->BeginFrame();
+	gEnv->renderer->BeginFrame();
 	
-	m_pRenderer->HwClear();
+	gEnv->renderer->HwClear();
 
 	SrApps::iterator it = m_tasks.begin();
 	for (; it != m_tasks.end(); ++it)
@@ -245,8 +236,7 @@ bool SoftRenderApp::Update()
 
 	gEnv->profiler->Update();
 
-	//g_context->GetSBuffer();
-	m_pRenderer->EndFrame();
+	gEnv->renderer->EndFrame();
 
 	gEnv->profiler->setEnd(ePe_FrameTime);
 
@@ -264,22 +254,10 @@ void SoftRenderApp::Destroy()
 		delete (*it);
 	}
 
+	ShutdownRenderers();
+
 	delete g_context;
 	delete gEnv->resourceMgr;
-
-	if (m_pHwRenderer)
-	{
-		m_pHwRenderer->ShutdownRenderer();
-		delete m_pHwRenderer;
-		m_pHwRenderer = NULL;
-	}
-
-	if (m_pSwRenderer)
-	{
-		m_pSwRenderer->ShutdownRenderer();
-		delete m_pSwRenderer;
-		m_pSwRenderer = NULL;
-	}
 
 	if (gEnv->timer)
 	{
@@ -297,9 +275,9 @@ void SoftRenderApp::Destroy()
 		delete gEnv->profiler;
 	}
 
-	delete gEnv;
+	delete gEnv->logger;
 
-	delete g_logger;
+	delete gEnv;	
 }
 
 void SoftRenderApp::Run()
@@ -372,16 +350,28 @@ bool SoftRenderApp::OnInputEvent( const SInputEvent &event )
 			{
 				if (event.state == eIS_Pressed)
 				{
-					if (m_pRenderer == m_pHwRenderer)
+					m_currRendererIndex++;
+					if (m_currRendererIndex >= m_renderers.size())
 					{
-						m_pRenderer = m_pSwRenderer;
-					}
-					else
-					{
-						m_pRenderer = m_pHwRenderer;
+						m_currRendererIndex = 0;
 					}
 
-					gEnv->renderer = m_pRenderer;
+					gEnv->renderer->ShutdownRenderer();
+
+					gEnv->renderer = m_renderers[m_currRendererIndex];
+
+					gEnv->renderer->InitRenderer(m_hWnd, g_context->width, g_context->height, 32);
+
+// 					if (m_pRenderer == m_pHwRenderer)
+// 					{
+// 						m_pRenderer = m_pSwRenderer;
+// 					}
+// 					else
+// 					{
+// 						m_pRenderer = m_pHwRenderer;
+// 					}
+// 
+// 					gEnv->renderer = m_pRenderer;
 				}
 			}
 			break;
@@ -395,4 +385,67 @@ void SoftRenderApp::LoadShaderList()
 	gEnv->resourceMgr->AddShader( new SrShader( "default", eVd_F4F4F4  ));
 	gEnv->resourceMgr->AddShader( new SrShader( "skin", eVd_F4F4F4F4U4  ));
 	gEnv->resourceMgr->AddShader( new SrShader( "hair", eVd_F4F4F4  ));
+}
+
+bool SoftRenderApp::InitRenderers()
+{
+	std::string dir = "\\renderer\\";
+	std::string path = "\\renderer\\*.dll";
+	getMediaPath(dir);
+	getMediaPath(path);
+
+	WIN32_FIND_DATAA fd;
+	HANDLE hff = FindFirstFileA(path.c_str(), &fd);
+	BOOL bIsFind = TRUE;
+
+	while(hff && bIsFind)
+	{
+		if(fd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY)
+		{
+			// do not get into
+		}
+		else
+		{
+			std::string fullpath = dir + fd.cFileName;
+
+			// load dll shaders
+			HMODULE hDllHandle = 0;
+			hDllHandle = LoadLibraryA( fullpath.c_str() );
+			if (hDllHandle)
+			{
+				fnLoadRenderer fnLoad = (fnLoadRenderer)(GetProcAddress( hDllHandle, "LoadRenderer" ));
+
+				IRenderer* renderer = fnLoad(gEnv);
+				//renderer->InitRenderer(m_hWnd, g_context->width, g_context->height, 32);
+
+
+				m_renderers.push_back(renderer);
+
+				m_rendHandles.push_back(hDllHandle);
+			}		
+		}
+		bIsFind = FindNextFileA(hff, &fd);
+	}
+
+	if ( m_renderers.empty() )
+	{
+		return false;
+	}
+	m_currRendererIndex = 0;
+	gEnv->renderer = m_renderers[m_currRendererIndex];
+	gEnv->renderer->InitRenderer(m_hWnd, g_context->width, g_context->height, 32);
+}
+
+void SoftRenderApp::ShutdownRenderers()
+{
+	for (uint32 i=0; i < m_rendHandles.size(); ++i)
+	{
+		m_renderers[i]->ShutdownRenderer();
+
+		fnFreeRenderer fnFree = (fnFreeRenderer)(GetProcAddress( m_rendHandles[i], "FreeRenderer" ));
+
+		fnFree();
+
+		FreeLibrary( m_rendHandles[i] );
+	}
 }

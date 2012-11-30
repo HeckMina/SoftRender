@@ -241,3 +241,137 @@ void SrResourceManager::AddShader( SrShader* shader )
 	}
 
 }
+
+
+SrVertexBuffer* SrResourceManager::AllocateVertexBuffer(uint32 elementSize, uint32 count, bool fastmode)
+{
+	SrVertexBuffer* vb = new SrVertexBuffer;
+	vb->elementSize = elementSize;
+	vb->elementCount = count;
+	vb->data = (uint8*)(_mm_malloc( elementSize * count, 16 ));
+
+	bool hasEmpty = false;
+	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
+	{
+		if( m_vertexBuffers[i] == NULL )
+		{
+			m_vertexBuffers[i] = vb;
+			hasEmpty = true;
+			break;
+		}
+	}
+
+	if (!hasEmpty)
+	{
+		m_vertexBuffers.push_back( vb );
+	}	
+
+	return vb;
+}
+
+bool SrResourceManager::DeleteVertexBuffer( SrVertexBuffer* target )
+{
+	if (target)
+	{
+		for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
+		{
+			if( m_vertexBuffers[i] == target )
+			{
+				_mm_free( m_vertexBuffers[i]->data );
+				delete (m_vertexBuffers[i]);
+				m_vertexBuffers[i] = NULL;
+
+				// 卸载了就跳出啊！
+				return true;
+			}
+		}
+	}
+
+
+	return false;
+}
+
+SrIndexBuffer* SrResourceManager::AllocateIndexBuffer( uint32 count )
+{
+	SrIndexBuffer* ib = new SrIndexBuffer;
+	ib->data = new uint32[count];
+	ib->count = count;
+
+	bool hasEmpty = false;
+	for (uint32 i=0; i < m_indexBuffers.size(); ++i)
+	{
+		if( m_indexBuffers[i] == NULL )
+		{
+			m_indexBuffers[i] = ib;
+			hasEmpty = true;
+
+			// 装入了就跳出啊！
+			break;
+		}
+	}
+
+	if (!hasEmpty)
+	{
+		m_indexBuffers.push_back( ib );
+	}	
+
+	return ib;
+
+
+}
+
+bool SrResourceManager::DeleteIndexBuffer( SrIndexBuffer* target )
+{
+	if (target)
+	{
+		for (uint32 i=0; i < m_indexBuffers.size(); ++i)
+		{
+			if( m_indexBuffers[i] == target )
+			{
+				if (m_indexBuffers[i]->data)
+				{
+					delete[] m_indexBuffers[i]->data;
+					m_indexBuffers[i]->data = NULL;
+				}			
+				delete m_indexBuffers[i];
+				m_indexBuffers[i] = NULL;
+
+				// 卸载了就跳出啊！
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void SrResourceManager::CleanBufferBinding()
+{
+	// VB binding
+	for (uint32 i=0; i < m_vertexBuffers.size(); ++i)
+	{
+		if (m_vertexBuffers[i])
+		{
+			m_vertexBuffers[i]->userData = NULL;
+		}		
+	}
+
+	// IB binding
+	for (uint32 i=0; i < m_indexBuffers.size(); ++i)
+	{
+		if (m_indexBuffers[i])
+		{
+			m_indexBuffers[i]->userData = NULL;
+		}
+		
+	}
+
+	// texture bindings
+	SrResourceLibrary::iterator it = m_textureLibrary.begin();
+	for(; it != m_textureLibrary.end(); ++it)
+	{
+		SrTexture* tex = (SrTexture*)(it->second);
+		tex->m_userData = NULL;
+	}
+
+
+}

@@ -15,7 +15,19 @@ class SrFragmentBuffer;
 
 struct SrRendContext
 {
-	SrRendContext(int w, int h, int bpp);
+	SrRendContext(int w, int h, int obpp)
+	{
+			memset(this, 0, sizeof(SrRendContext));
+			width = w;
+			height = h;
+			bpp = obpp / 8;
+			viewport = SrViewport(0.f,0.f,(float)width,(float)height,1.f,1000.f);
+
+			SYSTEM_INFO siSysInfo;
+			GetSystemInfo(&siSysInfo); 
+
+			processorNum = siSysInfo.dwNumberOfProcessors;
+	}
 
 	// 渲染特性相关
 	void OpenFeature( ERenderFeature feature )

@@ -23,15 +23,16 @@
 
 #define SR_NORMALIZE_VB_MAX_SIZE 1024 * 1024 * 10
 
-SrRendContext* g_context = NULL;
-
 SrSoftRenderer::SrSoftRenderer(void):IRenderer(eRt_Software),
 	m_d3d9(NULL),
 	m_drawSurface(NULL),
 	m_hwDevice(NULL),
 	m_cachedBuffer(NULL),
 	m_bufferPitch(0),
-	m_renderState(0)
+	m_renderState(0),
+	m_normalizeVertexBuffer(NULL),
+	m_shaderConstants(NULL),
+	m_rasterizer(NULL)
 {
 	m_textureStages.assign( SR_MAX_TEXTURE_STAGE_NUM , NULL );
 	m_normalizeVBAllocSize = 0;
@@ -42,7 +43,7 @@ SrSoftRenderer::~SrSoftRenderer(void)
 {
 }
 
-bool SrSoftRenderer::InnerInitRenderer( HWND hWnd, int width, int height, int bpp )
+bool SrSoftRenderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
 {
 	//////////////////////////////////////////////////////////////////////////
 	// create d3d device for Show Soft Buffer
@@ -90,28 +91,24 @@ bool SrSoftRenderer::InnerInitRenderer( HWND hWnd, int width, int height, int bp
 	return true;
 }
 
-bool SrSoftRenderer::InnerShutdownRenderer()
+bool SrSoftRenderer::ShutdownRenderer()
 {
 	for (uint32 i=0; i < m_swHandles.size(); ++i)
 	{
 		FreeLibrary( m_swHandles[i] );
 	}
+	m_swHandles.clear();
 
 	_mm_free(m_normalizeVertexBuffer);
+	m_normalizeVertexBuffer = 0;
 	_mm_free(m_shaderConstants);
+	m_shaderConstants = 0;
 
-	delete m_rasterizer;
+	SAFE_DELETE( m_rasterizer );
 
-	if (m_drawSurface != NULL)
-	{
-		m_drawSurface->Release();
-	}
-
-	if( m_hwDevice != NULL )
-		m_hwDevice->Release();
-
-	if( m_d3d9 != NULL )
-		m_d3d9->Release();
+	SAFE_RELEASE( m_drawSurface );
+	SAFE_RELEASE( m_hwDevice );
+	SAFE_RELEASE( m_d3d9 );
 
 	return true;
 }
@@ -192,9 +189,9 @@ void SrSoftRenderer::EndFrame()
 
 		m_drawSurface->UnlockRect();
 
-		FlushText();
-
-		m_textLines.clear();
+// 		FlushText();
+// 
+// 		m_textLines.clear();
 
 	m_renderState &= ~eRs_Rendering;
 
@@ -245,38 +242,38 @@ void SrSoftRenderer::FlushText()
 	if (!m_drawSurface)
 		return;
 
-	HDC hdc ;
-	HRESULT res = m_drawSurface->GetDC(&hdc);
-	if (res!=S_OK)
-	{
-		return;
-	}
-
-	SrTextLines::iterator it = m_textLines.begin();
-	for ( ; it != m_textLines.end(); ++it )
-	{
-		RECT rect;
-		rect.left = it->pos.x;
-		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
-		rect.top = it->pos.y;
-		rect.bottom = it->pos.y+20;
-		int len = (int)strlen(it->text.c_str());
-
-		if ( it->size == 0)
-		{
-			SelectObject(hdc, m_bigFont);
-		}
-		else
-		{
-			SelectObject(hdc, m_smallFont);
-		}
-		
-		SetBkMode(hdc, TRANSPARENT);
-		SetTextColor(hdc, it->color);
-		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
-	}
-
-	m_drawSurface->ReleaseDC(hdc);
+// 	HDC hdc ;
+// 	HRESULT res = m_drawSurface->GetDC(&hdc);
+// 	if (res!=S_OK)
+// 	{
+// 		return;
+// 	}
+// 
+// 	SrTextLines::iterator it = m_textLines.begin();
+// 	for ( ; it != m_textLines.end(); ++it )
+// 	{
+// 		RECT rect;
+// 		rect.left = it->pos.x;
+// 		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
+// 		rect.top = it->pos.y;
+// 		rect.bottom = it->pos.y+20;
+// 		int len = (int)strlen(it->text.c_str());
+// 
+// 		if ( it->size == 0)
+// 		{
+// 			SelectObject(hdc, m_bigFont);
+// 		}
+// 		else
+// 		{
+// 			SelectObject(hdc, m_smallFont);
+// 		}
+// 		
+// 		SetBkMode(hdc, TRANSPARENT);
+// 		SetTextColor(hdc, it->color);
+// 		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
+// 	}
+// 
+// 	m_drawSurface->ReleaseDC(hdc);
 }
 
 
@@ -309,7 +306,7 @@ SrVertexBuffer* SrSoftRenderer::AllocateNormalizedVertexBuffer( uint32 count, bo
 	}
 	else
 	{
-		return AllocateVertexBuffer( sizeof(SrRendVertex), count);
+		return gEnv->resourceMgr->AllocateVertexBuffer( sizeof(SrRendVertex), count);
 	}	
 }
 

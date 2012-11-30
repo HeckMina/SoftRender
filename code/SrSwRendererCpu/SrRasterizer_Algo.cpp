@@ -14,6 +14,7 @@
 #include "SrMesh.h"
 #include "SrMaterial.h"
 #include "SrSwShader.h"
+#include "SrFragmentBuffer.h"
 
 #include "mmgr/mmgr.h"
 

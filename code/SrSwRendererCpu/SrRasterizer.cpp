@@ -16,6 +16,7 @@
 #include "SrRasTaskDispatcher.h"
 #include "SrRasTasks.h"
 #include "SrSoftRenderer.h"
+#include "SrFragmentBuffer.h"
 
 #include "mmgr/mmgr.h"
 
@@ -81,7 +82,7 @@ bool SrRasterizer::DrawPrimitive( SrPrimitve* primitive )
 	// Create Cached Vb
 	if (!primitive->cachedVb)
 	{
-		SrVertexBuffer* cacheVB = gEnv->renderer->AllocateNormalizedVertexBuffer( primitive->vb->elementCount );
+		SrVertexBuffer* cacheVB = m_renderer->AllocateNormalizedVertexBuffer( primitive->vb->elementCount );
 		if (cacheVB)
 		{
 			// ÃÓ≥‰‰÷»æprimitive
@@ -335,31 +336,34 @@ void SrRasterizer::Flush()
 
 	//////////////////////////////////////////////////////////////////////////
 	// line helper draw
-	for (uint32 i=0; i < m_rendDynamicVertex.size(); i+=2)
-	{
-		float4 line0 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i];
-		float4 line1 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i+1];
-		
-		// trans to screen space
-		if (line0.w < .5f)
-		{
-			line0.w = .5f;
-		}
-		if (line1.w < .5f)
-		{
-			line1.w = .5f;
-		}
 
-		line0.xyz /= line0.w;
-		line1.xyz /= line1.w;
+	// FIXME
 
-		line0.x = ((-line0.x * .5f + 0.5f) * g_context->width);
-		line0.y = ((-line0.y * .5f + 0.5f) * g_context->height);
-		line1.x = ((-line1.x * .5f + 0.5f) * g_context->width);
-		line1.y = ((-line1.y * .5f + 0.5f) * g_context->height);
-
-		Draw_Clip_Line( (int)line0.x, (int)line0.y, (int)line1.x, (int)line1.y, 0xffffffff, outBuffer, g_context->width );
-	}
+// 	for (uint32 i=0; i < m_rendDynamicVertex.size(); i+=2)
+// 	{
+// 		float4 line0 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i];
+// 		float4 line1 = gEnv->renderer->GetMatrix(eMd_WorldViewProj) * m_rendDynamicVertex[i+1];
+// 		
+// 		// trans to screen space
+// 		if (line0.w < .5f)
+// 		{
+// 			line0.w = .5f;
+// 		}
+// 		if (line1.w < .5f)
+// 		{
+// 			line1.w = .5f;
+// 		}
+// 
+// 		line0.xyz /= line0.w;
+// 		line1.xyz /= line1.w;
+// 
+// 		line0.x = ((-line0.x * .5f + 0.5f) * g_context->width);
+// 		line0.y = ((-line0.y * .5f + 0.5f) * g_context->height);
+// 		line1.x = ((-line1.x * .5f + 0.5f) * g_context->width);
+// 		line1.y = ((-line1.y * .5f + 0.5f) * g_context->height);
+// 
+// 		Draw_Clip_Line( (int)line0.x, (int)line0.y, (int)line1.x, (int)line1.y, 0xffffffff, outBuffer, g_context->width );
+// 	}
 
 
 

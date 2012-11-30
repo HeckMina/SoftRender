@@ -15,6 +15,7 @@
 #include "SrShader.h"
 
 class SrRasTaskDispatcher;
+class SrSoftRenderer;
 
 inline void FastRasterize( SrRendVertex* out, SrRendVertex* a, SrRendVertex* b, float ratio, float inv_ratio )
 {

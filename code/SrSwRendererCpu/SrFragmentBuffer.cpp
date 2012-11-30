@@ -11,7 +11,7 @@ SrFragmentBuffer::SrFragmentBuffer( int width, int height, SrSoftRenderer* rende
 	memset(fBuffer, 0, size * sizeof(SrFragment));
 
 	//fragBufferPitch = sizeof(SrFragment) * width;
-	m_fBufferIndices = m_renderer->AllocateIndexBuffer(width * height);
+	m_fBufferIndices = gEnv->resourceMgr->AllocateIndexBuffer(width * height);
 
 	fragBufferSync = new SrFragmentBufferSync[size];
 
@@ -22,7 +22,7 @@ SrFragmentBuffer::SrFragmentBuffer( int width, int height, SrSoftRenderer* rende
 SrFragmentBuffer::~SrFragmentBuffer(void)
 {
 	_mm_free(fBuffer);
-	m_renderer->DeleteIndexBuffer(m_fBufferIndices);
+	gEnv->resourceMgr->DeleteIndexBuffer(m_fBufferIndices);
 	delete[] fragBufferSync;
 	delete[] zBuffer;
 }

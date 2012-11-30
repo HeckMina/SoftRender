@@ -70,6 +70,25 @@ enum EProfilerElement
 	ePe_Count,
 };
 
+struct IProfiler
+{
+	virtual ~IProfiler() {}
+
+	virtual void Update() =0;
+
+	virtual void setBegin( EProfilerElement element ) =0;
+	virtual void setEnd( EProfilerElement element ) =0;
+	virtual void IncreaseTime( EProfilerElement element, float time ) =0;
+	virtual void setIncrement( EProfilerElement element, int count = 1 ) =0;
+	virtual float getTime( EProfilerElement element ) =0;
+	virtual float getAverageTime( EProfilerElement element ) =0;
+	virtual int getCount( EProfilerElement element ) =0;
+
+// 	virtual void setGPUBegin( EProfilerElement element ) =0;
+// 	virtual void setGPUEnd( EProfilerElement element ) =0;
+};
+
+
 struct SrProfilerElement
 {
 	SrProfilerElement()
@@ -128,7 +147,8 @@ struct SrProfilerElement
 	}
 };
 
-class SrProfiler
+
+class SrProfiler : public IProfiler
 {
 public:
 	SrProfiler();

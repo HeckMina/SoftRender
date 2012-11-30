@@ -12,6 +12,7 @@
 #define SrHwD3D9Renderer_h__
 #include "prerequisite.h"
 #include "SrGpuTimer.h"
+#include "RendererBase.h"
 
 typedef std::vector<gkGpuTimer> SrGpuTimers;
 
@@ -22,7 +23,7 @@ class SrHwRenderTexture;
 class SrHwShader;
 
 
-class SrHwD3D9Renderer :public IRenderer
+class SrHwD3D9Renderer : public IRenderer
 {
 	enum EInternalShader
 	{
@@ -67,9 +68,9 @@ public:
 	SrHwD3D9Renderer(void);
 	~SrHwD3D9Renderer(void);
 
-	virtual bool InnerInitRenderer( HWND hWnd, int width, int height, int bpp );
+	virtual bool InitRenderer( HWND hWnd, int width, int height, int bpp );
 
-	virtual bool InnerShutdownRenderer();
+	virtual bool ShutdownRenderer();
 
 	virtual bool Resize( uint32 width, uint32 height );
 
@@ -126,6 +127,8 @@ private:
 	void StretchRT2TEX( uint8 index, SrHwRenderTexture* texture );
 	void StretchTEX2TEX( SrHwRenderTexture* source, SrHwRenderTexture* target );
 
+	void SetSamplerState( uint8 stage, DWORD state, DWORD value);
+	void SetRenderState( DWORD state, DWORD value );
 
 
 	//class SrHwTextFlusher* m_textFlusher;

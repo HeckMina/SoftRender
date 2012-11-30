@@ -28,8 +28,8 @@ public:
 	virtual ~SrSoftRenderer(void);
 
 	// 启动，关闭函数
-	bool InnerInitRenderer(HWND hWnd, int width, int height, int bpp);
-	bool InnerShutdownRenderer();
+	bool InitRenderer(HWND hWnd, int width, int height, int bpp);
+	bool ShutdownRenderer();
 	bool Resize(uint32 width, uint32 height);
 
 	// 帧控制函数

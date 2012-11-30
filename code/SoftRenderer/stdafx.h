@@ -27,5 +27,4 @@
 #include "RendererBase.h"
 #include "SrRenderContext.h"
 #include "SrResourceManager.h"
-#include "SrFragmentBuffer.h"
 #include "SrScene.h"

@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "BasicShaders.h"
-#include "SrRasterizer.h"
 
 #include "mmgr/mmgr.h"
 

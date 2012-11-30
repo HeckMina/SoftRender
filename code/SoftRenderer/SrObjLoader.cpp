@@ -290,8 +290,8 @@ void SrObjLoader::CreateMeshInternal(SrPrimitives& primitives )
 	m_bIsLoaded = true;
 
 	// Create Mesh
-	SrVertexBuffer* vb = gEnv->renderer->AllocateVertexBuffer( sizeof(SrVertexP3N3T2), m_Vertices.size() );
-	SrIndexBuffer* ib = gEnv->renderer->AllocateIndexBuffer( m_Indices.size() );
+	SrVertexBuffer* vb = gEnv->resourceMgr->AllocateVertexBuffer( sizeof(SrVertexP3N3T2), m_Vertices.size() );
+	SrIndexBuffer* ib = gEnv->resourceMgr->AllocateIndexBuffer( m_Indices.size() );
 
 	memcpy( vb->data, m_Vertices.data(), sizeof(SrVertexP3N3T2) * m_Vertices.size() );
 	memcpy( ib->data, m_Indices.data(), sizeof(uint32) * m_Indices.size() );

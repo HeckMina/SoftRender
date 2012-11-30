@@ -42,6 +42,15 @@ public:
 
 	virtual void				LoadShaderList();
 
+// render resource move here
+	// Buffer…Í«Î
+	virtual SrVertexBuffer* AllocateVertexBuffer(uint32 elementSize, uint32 count, bool fastmode = false);
+	virtual bool DeleteVertexBuffer(SrVertexBuffer* target);
+	virtual SrIndexBuffer*	AllocateIndexBuffer(uint32 count);
+	virtual bool DeleteIndexBuffer(SrIndexBuffer* target);
+
+	virtual void CleanBufferBinding();
+
 	SrResourceLibrary	m_shaderLibrary;
 private:
 	SrResourceLibrary	m_meshLibrary;
@@ -49,6 +58,9 @@ private:
 	SrResourceLibrary	m_materialLibrary;
 
 	SrDefaultMediaPack* m_defaultMediaPack;
+
+	SrVertexBufferArray m_vertexBuffers;
+	SrIndexBufferArray	m_indexBuffers;
 };
 
 #endif // SrResourceManager_h__

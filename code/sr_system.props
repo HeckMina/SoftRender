@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(SolutionDir)\..\immediate\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <TargetName>$(ProjectName)_$(Configuration)</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>

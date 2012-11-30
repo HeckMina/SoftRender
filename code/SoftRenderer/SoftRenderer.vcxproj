@@ -41,12 +41,12 @@
       <Configuration>Release_IntelCompiler</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release_Vc10Compiler|Win32">
-      <Configuration>Release_Vc10Compiler</Configuration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release_Vc10Compiler|x64">
-      <Configuration>Release_Vc10Compiler</Configuration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -106,7 +106,7 @@
     <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
     <InterproceduralOptimization>true</InterproceduralOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -114,7 +114,7 @@
     <UseOfAtl>false</UseOfAtl>
     <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -181,11 +181,11 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\sr_system.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\sr_system.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\sr_system.props" />
   </ImportGroup>
@@ -231,11 +231,11 @@
     <OutDir>$(SolutionDir)\..\bin64\</OutDir>
     <TargetName>$(ProjectName)_extended</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)\..\bin64\</OutDir>
     <TargetName>$(ProjectName)_extended</TargetName>
@@ -416,7 +416,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -445,7 +445,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -585,30 +585,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\bin32\shader\hwcode\blur.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\default.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\dof.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\hair.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\jitaa.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\line.hlsl" />
-    <None Include="..\..\bin32\shader\hwcode\skin.hlsl" />
     <None Include="small.ico" />
     <None Include="SoftRenderer.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\constant_def.h" />
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\fwconstant_def.h" />
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\postprocess.h" />
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\shading_lib.h" />
-    <ClInclude Include="..\..\bin32\shader\hwcode\include\vertex_process.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="prerequisite.h" />
     <ClInclude Include="RendererBase.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="SrHwRenderTexture.h" />
-    <ClInclude Include="SrHwShader.h" />
     <ClInclude Include="SrLogger.h" />
     <ClInclude Include="SrSwShader.h" />
     <ClInclude Include="SoftRenderApp.h" />
@@ -617,19 +603,12 @@
     <ClInclude Include="SrCamera.h" />
     <ClInclude Include="SrDefaultMedia.h" />
     <ClInclude Include="SrEntity.h" />
-    <ClInclude Include="SrFragmentBuffer.h" />
-    <ClInclude Include="SrGpuTimer.h" />
-    <ClInclude Include="SrHwD3D9Renderer.h" />
     <ClInclude Include="SrMaterial.h" />
     <ClInclude Include="SrMesh.h" />
     <ClInclude Include="SrObjLoader.h" />
     <ClInclude Include="SrProfiler.h" />
-    <ClInclude Include="SrRasTaskDispatcher.h" />
-    <ClInclude Include="SrRasTasks.h" />
-    <ClInclude Include="SrRasterizer.h" />
     <ClInclude Include="SrRenderContext.h" />
     <ClInclude Include="SrShader.h" />
-    <ClInclude Include="SrSoftRenderer.h" />
     <ClInclude Include="SrRenderTexture.h" />
     <ClInclude Include="SrResource.h" />
     <ClInclude Include="SrResourceManager.h" />
@@ -653,13 +632,13 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="mmgr\mmgr.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler_AVX|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='PreRelease|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler_AVX|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
@@ -667,30 +646,17 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="RendererBase.cpp" />
     <ClCompile Include="SoftRenderApp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SrBitmap.cpp" />
     <ClCompile Include="SrCamera.cpp" />
     <ClCompile Include="SrDefaultMedia.cpp" />
     <ClCompile Include="SrEntity.cpp" />
-    <ClCompile Include="SrFragmentBuffer.cpp" />
-    <ClCompile Include="SrGpuTimer.cpp" />
-    <ClCompile Include="SrHwD3D9Renderer.cpp" />
-    <ClCompile Include="SrHwRenderTexture.cpp" />
-    <ClCompile Include="SrHwShader.cpp" />
     <ClCompile Include="SrLogger.cpp" />
     <ClCompile Include="SrMaterial.cpp" />
     <ClCompile Include="SrMesh.cpp" />
     <ClCompile Include="SrObjLoader.cpp" />
     <ClCompile Include="SrProfiler.cpp" />
-    <ClCompile Include="SrRasTaskDispatcher.cpp" />
-    <ClCompile Include="SrRasTasks.cpp" />
-    <ClCompile Include="SrRasterizer.cpp" />
-    <ClCompile Include="SrRasterizer_Algo.cpp" />
-    <ClCompile Include="SrRasterize_Clip.cpp" />
-    <ClCompile Include="SrRenderContext.cpp" />
-    <ClCompile Include="SrSoftRenderer.cpp" />
     <ClCompile Include="SrRenderTexture.cpp" />
     <ClCompile Include="SrResource.cpp" />
     <ClCompile Include="SrResourceManager.cpp" />
@@ -704,8 +670,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler_AVX|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_IntelCompiler_AVX|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Vc10Compiler|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='PreRelease|Win32'">Create</PrecompiledHeader>

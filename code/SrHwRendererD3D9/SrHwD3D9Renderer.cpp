@@ -46,7 +46,16 @@ const D3DVERTEXELEMENT9 g_lineDecl[] =
 	D3DDECL_END()
 };
 
-SrHwD3D9Renderer::SrHwD3D9Renderer(void):IRenderer(eRt_HardwareD3D9)
+SrHwD3D9Renderer::SrHwD3D9Renderer(void):IRenderer(eRt_HardwareD3D9),
+	m_hwDevice(NULL),
+	m_d3d9(NULL),
+	m_depthStencil(NULL),
+	m_depthStencilHalf(NULL),
+	m_defaultVertexDecl(NULL),
+	m_skinVertexDecl(NULL),
+	m_lineVertexDecl(NULL),
+	m_rhzVertexDecl(NULL),
+	m_backBuffer(NULL)
 {
 	m_DSSize = eDSS_Full;
 }
@@ -235,7 +244,8 @@ bool SrHwD3D9Renderer::ShutdownRenderer()
 
 	SAFE_RELEASE( m_backBuffer );
 
-	m_hwDevice->EvictManagedResources();
+	if(m_hwDevice)
+		m_hwDevice->EvictManagedResources();
 
 	SAFE_RELEASE( m_hwDevice );
 	SAFE_RELEASE( m_d3d9 );

@@ -56,14 +56,15 @@ bool SrSoftRenderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	// bpp 32 XRGB
 	d3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
-	d3dpp.EnableAutoDepthStencil = TRUE;
+	d3dpp.EnableAutoDepthStencil = FALSE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	d3dpp.BackBufferWidth = width;
 	d3dpp.BackBufferHeight = height;
+	d3dpp.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 
 	// Create the D3DDevice
-	if( FAILED( m_d3d9->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+	if( FAILED( m_d3d9->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
 		&d3dpp, &m_hwDevice ) ) )
 	{
@@ -71,12 +72,8 @@ bool SrSoftRenderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
 		return false;
 	}
 
-	// 关闭Z BUFFER
-	m_hwDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
-	m_hwDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-
-	// 创建硬件buffer
-	CreateHwBuffer();
+	// Get backBuffrt
+	m_hwDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_drawSurface);
 
 	// 创建光栅化处理器
 	m_rasterizer = new SrRasterizer;
@@ -130,34 +127,10 @@ bool SrSoftRenderer::HwClear()
 bool SrSoftRenderer::Swap()
 {
 	m_renderState |= eRS_Swaping;
-	IDirect3DSurface9* bbSurf;
 
-	m_hwDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bbSurf);
-	m_hwDevice->StretchRect( m_drawSurface, NULL, bbSurf, NULL, D3DTEXF_NONE );
 	m_hwDevice->Present(NULL, NULL, NULL, NULL);
 
-	bbSurf->Release();
 	m_renderState &= ~eRS_Swaping;
-	return true;
-}
-
-bool SrSoftRenderer::CreateHwBuffer()
-{
-	if (m_drawSurface == NULL)
-	{
-		IDirect3DSurface9* bbSurf;
-		m_hwDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bbSurf);
-
-		D3DSURFACE_DESC bbDesc;
-		bbSurf->GetDesc( &bbDesc );
-
-		m_hwDevice->CreateOffscreenPlainSurface( g_context->width, g_context->height, 
-			bbDesc.Format,
-			D3DPOOL_DEFAULT,
-			&m_drawSurface,NULL);
-
-		bbSurf->Release();
-	}
 	return true;
 }
 
@@ -171,8 +144,6 @@ void SrSoftRenderer::BeginFrame()
 
 void SrSoftRenderer::EndFrame()
 {
-// 	if ( !(m_renderState & eRS_Locked))
-// 	{
 		D3DLOCKED_RECT lockinfo;
 		memset(&lockinfo,0,sizeof(lockinfo));
 

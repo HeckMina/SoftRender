@@ -27,6 +27,8 @@ public:
 	SrSoftRenderer(void);
 	virtual ~SrSoftRenderer(void);
 
+	virtual const char* getName();
+
 	// 启动，关闭函数
 	bool InitRenderer(HWND hWnd, int width, int height, int bpp);
 	bool ShutdownRenderer();
@@ -49,6 +51,7 @@ public:
 	// 渲染调用
 	bool DrawPrimitive( SrPrimitve* primitive );
 	bool DrawLine(const float3& from, const float3& to);
+	bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT);
 
 	// Shader设置
 	virtual bool SetShader( const SrShader* shader );
@@ -67,6 +70,8 @@ private:
 	virtual SrVertexBuffer* AllocateNormalizedVertexBuffer( uint32 count, bool fastmode = false );
 
 	virtual bool InnerInitShaders();
+
+	
 
 	// DX硬件对象
 	struct IDirect3D9* m_d3d9;
@@ -91,6 +96,11 @@ private:
 	SrSwShaders m_swShaders;
 	float4* m_shaderConstants;
 	SrHandleList m_swHandles;
+
+
+	HFONT m_bigFont;
+	HFONT m_smallFont;
+	SrTextLines m_textLines;
 };
 
 #endif // SrRenderer_h__

@@ -58,10 +58,27 @@ SrHwD3D9Renderer::SrHwD3D9Renderer(void):IRenderer(eRt_HardwareD3D9),
 	m_backBuffer(NULL)
 {
 	m_DSSize = eDSS_Full;
+
+	// create HFONT
+	LOGFONT lfont;
+	memset   (&lfont,   0,   sizeof   (LOGFONT));   
+	lfont.lfHeight=14;
+	lfont.lfWeight=800;   
+	lfont.lfClipPrecision=CLIP_LH_ANGLES; 
+	lfont.lfQuality = NONANTIALIASED_QUALITY; // THIS COULD BOOST
+	strcpy_s( lfont.lfFaceName, "Verdana" );
+	m_bigFont = CreateFontIndirect( &lfont );
+
+	lfont.lfHeight=12;
+	lfont.lfWeight=500;  
+	m_smallFont = CreateFontIndirect( &lfont );
+
 }
 
 SrHwD3D9Renderer::~SrHwD3D9Renderer(void)
 {
+	DeleteObject(m_smallFont);
+	DeleteObject(m_bigFont);
 }
 
 bool SrHwD3D9Renderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
@@ -339,8 +356,8 @@ void SrHwD3D9Renderer::EndFrame()
 	
 	
 
-// 	FlushText();
-// 	m_textLines.clear();
+ 	FlushText();
+ 	m_textLines.clear();
 
 	m_hwDevice->EndScene();
 
@@ -586,38 +603,38 @@ void SrHwD3D9Renderer::FlushText()
 
 
 // Try HDC
-// 	HDC hdc ;
-// 	HRESULT res = m_backBuffer->GetDC(&hdc);
-// 	if (res!=S_OK)
-// 	{
-// 		return;
-// 	}
-// 
-// 	SrTextLines::iterator it = m_textLines.begin();
-// 	for ( ; it != m_textLines.end(); ++it )
-// 	{
-// 		RECT rect;
-// 		rect.left = it->pos.x;
-// 		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
-// 		rect.top = it->pos.y;
-// 		rect.bottom = it->pos.y+20;
-// 		int len = (int)strlen(it->text.c_str());
-// 
-// 		if ( it->size == 0)
-// 		{
-// 			SelectObject(hdc, m_bigFont);
-// 		}
-// 		else
-// 		{
-// 			SelectObject(hdc, m_smallFont);
-// 		}
-// 
-// 		SetBkMode(hdc, TRANSPARENT);
-// 		SetTextColor(hdc, it->color);
-// 		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
-// 	}
-// 
-// 	m_backBuffer->ReleaseDC(hdc);
+	HDC hdc ;
+	HRESULT res = m_backBuffer->GetDC(&hdc);
+	if (res!=S_OK)
+	{
+		return;
+	}
+
+	SrTextLines::iterator it = m_textLines.begin();
+	for ( ; it != m_textLines.end(); ++it )
+	{
+		RECT rect;
+		rect.left = it->pos.x;
+		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
+		rect.top = it->pos.y;
+		rect.bottom = it->pos.y+20;
+		int len = (int)strlen(it->text.c_str());
+
+		if ( it->size == 0)
+		{
+			SelectObject(hdc, m_bigFont);
+		}
+		else
+		{
+			SelectObject(hdc, m_smallFont);
+		}
+
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, it->color);
+		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
+	}
+
+	m_backBuffer->ReleaseDC(hdc);
 }
 
 bool SrHwD3D9Renderer::UpdateVertexBuffer( SrVertexBuffer* target )
@@ -1033,6 +1050,24 @@ uint32 SrHwD3D9Renderer::Tex2D( float2& texcoord, const SrTexture* texture ) con
 bool SrHwD3D9Renderer::UpdateShaderConstantsPerFrame()
 {
 	return true;
+}
+
+bool SrHwD3D9Renderer::DrawScreenText( const char* str, int x,int y, uint32 size, DWORD color /*= SR_UICOLOR_HIGHLIGHT*/ )
+{
+	SrTextLine line;
+	line.text = std::string(str);
+	line.pos = int2(x,y);
+	line.size = size;
+	line.color = color;
+
+	m_textLines.push_back( line );
+
+	return true;
+}
+
+const char* SrHwD3D9Renderer::getName()
+{
+	return "HwD3D9";
 }
 
 

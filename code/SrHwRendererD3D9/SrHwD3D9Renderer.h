@@ -68,6 +68,8 @@ public:
 	SrHwD3D9Renderer(void);
 	~SrHwD3D9Renderer(void);
 
+	virtual const char* getName();
+
 	virtual bool InitRenderer( HWND hWnd, int width, int height, int bpp );
 
 	virtual bool ShutdownRenderer();
@@ -88,6 +90,7 @@ public:
 	
 	virtual bool DrawPrimitive( SrPrimitve* primitive );
 	virtual bool DrawLine( const float3& from, const float3& to );
+	bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT);
 	
 	virtual bool SetHwShader( SrHwShader* shader );
 
@@ -130,6 +133,8 @@ private:
 	void SetSamplerState( uint8 stage, DWORD state, DWORD value);
 	void SetRenderState( DWORD state, DWORD value );
 
+	
+
 
 	//class SrHwTextFlusher* m_textFlusher;
 
@@ -161,6 +166,10 @@ private:
 
 	SrBindVBs m_bindVBs;
 	SrBindIBs m_bindIBs;
+
+	HFONT m_bigFont;
+	HFONT m_smallFont;
+	SrTextLines m_textLines;
 };
 
 #endif // SrHwD3D9Renderer_h__

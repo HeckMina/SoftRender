@@ -65,9 +65,11 @@ int SrProfiler::getCount( EProfilerElement element )
 void SrProfiler::Update()
 {
 	char buffer[512];
-	sprintf_s(buffer, "SoftRENDERER v0.1 | Fps: %.2f | FT: %.2fms | %s | %s | %s", 
+	sprintf_s(buffer, "SoftRENDERER v0.3(%s)| Fps: %.2f | FT: %.2fms | %d x %d |%s | %s | %s", 
+		gEnv->renderer->getName(),
 		1000.f / gEnv->profiler->getAverageTime(ePe_FrameTime), 
 		gEnv->profiler->getAverageTime(ePe_FrameTime),
+		g_context->width, g_context->height,
 		g_context->IsFeatureEnable(eRFeature_MThreadRendering) ? "MT" : "ST",
 		g_context->IsFeatureEnable(eRFeature_JitAA) ? "jitAA on" : "jitAA off",
 		g_context->IsFeatureEnable(eRFeature_LinearFiltering) ? "LinearF" : "PointF"

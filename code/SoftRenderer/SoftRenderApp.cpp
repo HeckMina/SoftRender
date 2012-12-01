@@ -116,15 +116,15 @@ BOOL SoftRenderApp::Init( HINSTANCE hInstance)
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_SOFTRENDERER);
 	wcex.lpszClassName	= "SoftRenderer Window Class";
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SOFTRENDERER));
 
 	RegisterClassEx(&wcex);
 
 
 	m_hInst = hInstance; // Store instance handle in our global variable
 
-	const int createWidth = 640;
-	const int createHeight = 360;
+	const int createWidth = 854;
+	const int createHeight = 480;
 
 	m_hWnd = CreateWindow("SoftRenderer Window Class", "SoftRenderer", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, createWidth, createHeight, NULL, NULL, hInstance, NULL);

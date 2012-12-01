@@ -36,11 +36,27 @@ SrSoftRenderer::SrSoftRenderer(void):IRenderer(eRt_Software),
 {
 	m_textureStages.assign( SR_MAX_TEXTURE_STAGE_NUM , NULL );
 	m_normalizeVBAllocSize = 0;
-}
 
+	// create HFONT
+	LOGFONT lfont;
+	memset   (&lfont,   0,   sizeof   (LOGFONT));   
+	lfont.lfHeight=14;
+	lfont.lfWeight=800;   
+	lfont.lfClipPrecision=CLIP_LH_ANGLES; 
+	lfont.lfQuality = NONANTIALIASED_QUALITY; // THIS COULD BOOST
+	strcpy_s( lfont.lfFaceName, "verdana" );
+	m_bigFont = CreateFontIndirect( &lfont );
+
+	lfont.lfHeight=12;
+	lfont.lfWeight=0;  
+	m_smallFont = CreateFontIndirect( &lfont );
+
+}
 
 SrSoftRenderer::~SrSoftRenderer(void)
 {
+	DeleteObject(m_smallFont);
+	DeleteObject(m_bigFont);
 }
 
 bool SrSoftRenderer::InitRenderer( HWND hWnd, int width, int height, int bpp )
@@ -160,9 +176,9 @@ void SrSoftRenderer::EndFrame()
 
 		m_drawSurface->UnlockRect();
 
-// 		FlushText();
-// 
-// 		m_textLines.clear();
+ 		FlushText();
+ 
+ 		m_textLines.clear();
 
 	m_renderState &= ~eRs_Rendering;
 
@@ -212,39 +228,39 @@ void SrSoftRenderer::FlushText()
 {
 	if (!m_drawSurface)
 		return;
-
-// 	HDC hdc ;
-// 	HRESULT res = m_drawSurface->GetDC(&hdc);
-// 	if (res!=S_OK)
-// 	{
-// 		return;
-// 	}
-// 
-// 	SrTextLines::iterator it = m_textLines.begin();
-// 	for ( ; it != m_textLines.end(); ++it )
-// 	{
-// 		RECT rect;
-// 		rect.left = it->pos.x;
-// 		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
-// 		rect.top = it->pos.y;
-// 		rect.bottom = it->pos.y+20;
-// 		int len = (int)strlen(it->text.c_str());
-// 
-// 		if ( it->size == 0)
-// 		{
-// 			SelectObject(hdc, m_bigFont);
-// 		}
-// 		else
-// 		{
-// 			SelectObject(hdc, m_smallFont);
-// 		}
-// 		
-// 		SetBkMode(hdc, TRANSPARENT);
-// 		SetTextColor(hdc, it->color);
-// 		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
-// 	}
-// 
-// 	m_drawSurface->ReleaseDC(hdc);
+ 
+  	HDC hdc ;
+  	HRESULT res = m_drawSurface->GetDC(&hdc);
+  	if (res!=S_OK)
+  	{
+  		return;
+  	}
+  
+  	SrTextLines::iterator it = m_textLines.begin();
+  	for ( ; it != m_textLines.end(); ++it )
+  	{
+  		RECT rect;
+  		rect.left = it->pos.x;
+  		rect.right =(LONG)(strlen(it->text.c_str()) * 10 + it->pos.x);
+  		rect.top = it->pos.y;
+  		rect.bottom = it->pos.y+20;
+  		int len = (int)strlen(it->text.c_str());
+  
+  		if ( it->size == 0)
+  		{
+  			SelectObject(hdc, m_bigFont);
+  		}
+  		else
+  		{
+  			SelectObject(hdc, m_smallFont);
+  		}
+  		
+  		SetBkMode(hdc, TRANSPARENT);
+  		SetTextColor(hdc, it->color);
+  		DrawTextA(hdc,it->text.c_str(),len,&rect,DT_LEFT);	
+  	}
+  
+  	m_drawSurface->ReleaseDC(hdc);
 }
 
 
@@ -380,4 +396,22 @@ bool SrSoftRenderer::InnerInitShaders()
 
 
 	return true;
+}
+
+bool SrSoftRenderer::DrawScreenText( const char* str, int x,int y, uint32 size, DWORD color /*= SR_UICOLOR_HIGHLIGHT*/ )
+{
+	SrTextLine line;
+	line.text = std::string(str);
+	line.pos = int2(x,y);
+	line.size = size;
+	line.color = color;
+
+	m_textLines.push_back( line );
+
+	return true;
+}
+
+const char* SrSoftRenderer::getName()
+{
+	return "SwCPU";
 }

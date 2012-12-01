@@ -59,6 +59,8 @@ public:
 
 	}
 
+	virtual const char* getName() =0;
+
 	// 启动，关闭函数
 	virtual bool Resize(uint32 width, uint32 height)=0;
 
@@ -82,6 +84,7 @@ public:
 	// 渲染调用
 	virtual bool DrawPrimitive( SrPrimitve* primitive )=0;
 	virtual bool DrawLine(const float3& from, const float3& to)=0;
+	virtual bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT) =0;
 
 	// Shader设置
 	virtual bool SetShader(const SrShader* shader) =0;
@@ -110,19 +113,6 @@ public:
 		return ret;
 	}
 
-	bool DrawScreenText(const char* str, int x,int y, uint32 size, DWORD color = SR_UICOLOR_HIGHLIGHT)
-	{
-// 		SrTextLine line;
-// 		line.text = std::string(str);
-// 		line.pos = int2(x,y);
-// 		line.size = size;
-// 		line.color = color;
-// 
-// 		m_textLines.push_back( line );
-
-		return true;
-	}
-
 	// TEX2D for swRenderer
 	virtual uint32 Tex2D(float2& texcoord, const SrTexture* texture ) const =0;
 
@@ -138,12 +128,7 @@ public:
 protected:
 	SrMatrixArray m_matrixStack;
 	
-	uint32 m_frameCount;
-
-	HFONT m_bigFont;
-	HFONT m_smallFont;
-
-	
+	uint32 m_frameCount;	
 };
 
 

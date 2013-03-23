@@ -136,6 +136,11 @@ struct PS_OUTPUT
     float4 RGBColor : COLOR0;  // Pixel color    
 };
 
+struct PS_OUTPUT_MRT
+{
+	float4 RGBColor0 : COLOR0;  // Pixel color   
+	float4 RGBColor1 : COLOR1;  // Pixel color
+};
 
 //--------------------------------------------------------------------------------------
 // This shader outputs the pixel's color by modulating the texture's
@@ -228,12 +233,72 @@ PS_OUTPUT Verlet_StaticForcePS( float2 TextureUV : TEXCOORD0 )
 	return Output;
 }
 
+int g_emitCount;
+float4 g_emitPos[20];
+float4 g_emitParam[20];
+float4 g_emitIndex[20];
+
+PS_OUTPUT_MRT EmitPS( float2 TextureUV : TEXCOORD0, float2 vPos :VPOS )
+{
+	PS_OUTPUT_MRT Output = (PS_OUTPUT_MRT)0;
+	float4 prevVel = tex2D(tex0, TextureUV);
+	float4 prevPos = tex2D(tex1, TextureUV);
+
+	// 根据发射数量来发射
+  	for ( int i=0; i < g_emitCount; ++i )
+  	{
+ 		if ( length(vPos - g_emitIndex[i].xy) < 0.001/* && prevVel.w < 0.001*/)
+ 		{
+			// 更新速度
+			prevVel.xyz = g_emitParam[i].xyz;
+			prevVel.w = 0.001;
+
+			// 更新位置
+			prevPos.xyz = g_emitPos[i].xyz;
+ 		}
+ 	}
+
+
+	Output.RGBColor0 = prevVel;
+	Output.RGBColor1 = prevPos;
+	return Output;
+}
+
+PS_OUTPUT_MRT ExpirePS( float2 TextureUV : TEXCOORD0 )
+{
+	PS_OUTPUT_MRT Output = (PS_OUTPUT_MRT)0;
+	float4 prevVel = tex2D(tex0, TextureUV);
+	float4 prevPos = tex2D(tex1, TextureUV);
+
+	// 5s 后死亡
+	if ( prevVel.w > 5.0)
+	{
+		prevVel = 0;
+		// HIDE
+		prevPos = float4(-10000,-10000,-10000,prevPos.w);
+
+		//prevPos = float4(0,0,0,prevPos.w);
+	}
+
+	Output.RGBColor0 = prevVel;
+	Output.RGBColor1 = prevPos; 
+	return Output;
+}
+
 PS_OUTPUT Eular_AttractionPS( float2 TextureUV : TEXCOORD0 ) 
 { 
 	PS_OUTPUT Output = (PS_OUTPUT)0;
 
 	// Lookup mesh texture and modulate it with diffuse
-	float3 prevVel = tex2D(tex0, TextureUV);
+	float4 prevVel = tex2D(tex0, TextureUV);
+	if (prevVel.w < 0.0001)
+	{
+		Output.RGBColor = prevVel;
+
+		return Output;
+	}
+	prevVel.w += g_timeVar.x;
+
 	float3 currPos = tex2D(tex1, TextureUV);
 
 	float3 vec0 = g_attract0.xyz - currPos;
@@ -245,11 +310,11 @@ PS_OUTPUT Eular_AttractionPS( float2 TextureUV : TEXCOORD0 )
 	vec2 = normalize(vec2) / length(vec2);
 
 	float3 mergeForce = vec0 + vec1 + vec2;
-	//mergeForce = normalize(mergeForce);
 
-	float3 nextPos = prevVel + mergeForce * 2.0 * g_timeVar.x;
+	float3 nextPos = prevVel.xyz + mergeForce * 2.0 * g_timeVar.x;
 
 	Output.RGBColor.xyz = nextPos;
+	Output.RGBColor.w = prevVel.w;
 
 	return Output;
 }
@@ -259,10 +324,10 @@ PS_OUTPUT Eular_UpdatePS( float2 TextureUV : TEXCOORD0 )
 	PS_OUTPUT Output = (PS_OUTPUT)0;
 
 	// Lookup mesh texture and modulate it with diffuse
-	float3 prevVel = tex2D(tex0, TextureUV);
+	float4 prevVel = tex2D(tex0, TextureUV);
 	float4 prevPos = tex2D(tex1, TextureUV);
 
-	float3 nextPos = prevPos.xyz + prevVel * g_timeVar.x;
+	float3 nextPos = prevPos.xyz + prevVel.xyz * g_timeVar.x;
 
 	Output.RGBColor.xyz = nextPos;
 	Output.RGBColor.w = prevPos.w;
@@ -296,9 +361,29 @@ technique Eular_Update
 	}
 };
 
+technique Emit
+{
+	pass P0
+	{
+		VertexShader = null;
+		PixelShader  = compile ps_3_0 EmitPS(); 
+	}
+};
+
+technique Expire
+{
+	pass P0
+	{
+		VertexShader = null;
+		PixelShader  = compile ps_3_0 ExpirePS(); 
+	}
+};
+
+
+
 PS_OUTPUT Trail_MergePS( float2 TextureUV : TEXCOORD0 ) 
 {
-	PS_OUTPUT Output = (PS_OUTPUT)0.9;
+	PS_OUTPUT Output = (PS_OUTPUT)0.6;
 
 	float3 prevVel = tex2D(tex0, TextureUV);
 
@@ -313,5 +398,26 @@ technique Trail_Merge
 	{
 		VertexShader = null;
 		PixelShader  = compile ps_3_0 Trail_MergePS(); 
+	}
+};
+
+
+PS_OUTPUT ShowParticleLifePS( float2 TextureUV : TEXCOORD0 ) 
+{
+	PS_OUTPUT Output = (PS_OUTPUT)1;
+
+	float3 prevVel = tex2D(tex0, TextureUV);
+
+	Output.RGBColor.xyz = prevVel;
+
+	return Output;
+}
+
+technique ShowParticleLife
+{
+	pass P0
+	{
+		VertexShader = null;
+		PixelShader  = compile ps_3_0 ShowParticleLifePS(); 
 	}
 };

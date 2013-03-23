@@ -15,7 +15,7 @@
 //#define DEBUG_VS   // Uncomment this line to debug D3D9 vertex shaders 
 //#define DEBUG_PS   // Uncomment this line to debug D3D9 pixel shaders 
 
-#define SQRT_PARTICLE_COUNT 1024
+#define SQRT_PARTICLE_COUNT 64
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -66,7 +66,11 @@ struct PPVERT
 	D3DXVECTOR2 texcoord0;       // Texcoord for post-process source
 };
 
+//////////////////////////////////////////////////////////////////////////
+// PARTICLE 更新纹理
 
+// 1. POS/MASS MAP xyz|位置 w|质量
+// 2. VEL/LIVE xyz|速度 w|生存状态
 
 IDirect3DIndexBuffer9*			g_gpuParticleIB;
 IDirect3DVertexBuffer9*			g_gpuParticleVB;
@@ -104,19 +108,26 @@ struct GPUUpdateContent
 		g_currVELRT = tmp;
 	}
 
-	void PushVelRT(IDirect3DDevice9* pd3dDevice)
+	void SwapVelocity()
+	{
+		IDirect3DTexture9* tmp = g_prevVELRT;
+		g_prevVELRT = g_currVELRT;
+		g_currVELRT = tmp;
+	}
+
+	void PushVelRT(IDirect3DDevice9* pd3dDevice, int index = 0)
 	{
 		IDirect3DSurface9* rt;
 		g_currVELRT->GetSurfaceLevel(0, &rt);
-		pd3dDevice->SetRenderTarget(0, rt);
+		pd3dDevice->SetRenderTarget(index, rt);
 		rt->Release();
 	}
 
-	void PushPosRT(IDirect3DDevice9* pd3dDevice)
+	void PushPosRT(IDirect3DDevice9* pd3dDevice, int index = 0)
 	{
 		IDirect3DSurface9* rt;
 		g_currPOSRT->GetSurfaceLevel(0, &rt);
-		pd3dDevice->SetRenderTarget(0, rt);
+		pd3dDevice->SetRenderTarget(index, rt);
 		rt->Release();
 	}
 };
@@ -187,7 +198,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     InitApp();
     DXUTInit( true, true, NULL ); // Parse the command line, show msgboxes on error, no extra command line params
     DXUTSetCursorSettings( true, true );
-    DXUTCreateWindow( L"gpu_particle_galaxy" );
+    DXUTCreateWindow( L"gpu_particle_system" );
     DXUTCreateDevice( true, 1280, 800 );
     DXUTMainLoop(); // Enter into the DXUT render loop
 
@@ -213,14 +224,14 @@ void InitApp()
     g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
 
-void DrawQuad( IDirect3DDevice9* pd3dDevice, int nTexWidth, int nTexHeight )
+void DrawQuad( IDirect3DDevice9* pd3dDevice, int nTexWidth, int nTexHeight, int nTexLeft =0, int nTexTop = 0 )
 {
 	PPVERT quad[4];
 
-	quad[0].post = D3DXVECTOR4(  -0.5f,						-0.5f,						1.0f, 1.0f );
-	quad[1].post = D3DXVECTOR4(  -0.5f,						- 0.5f + nTexHeight,		1.0f, 1.0f );	
-	quad[2].post = D3DXVECTOR4(  - 0.5f + nTexWidth,		-0.5f,						1.0f, 1.0f );	
-	quad[3].post = D3DXVECTOR4(  - 0.5f + nTexWidth,		- 0.5f + nTexHeight,		1.0f, 1.0f );
+	quad[0].post = D3DXVECTOR4(  -0.5f + nTexLeft,						-0.5f + nTexTop,						1.0f, 1.0f );
+	quad[1].post = D3DXVECTOR4(  -0.5f + nTexLeft,						- 0.5f + nTexTop + nTexHeight,		1.0f, 1.0f );	
+	quad[2].post = D3DXVECTOR4(  - 0.5f + nTexLeft + nTexWidth,		-0.5f + nTexTop,						1.0f, 1.0f );	
+	quad[3].post = D3DXVECTOR4(  - 0.5f + nTexLeft + nTexWidth,		- 0.5f + nTexTop + nTexHeight,		1.0f, 1.0f );
 
 	// screenTC
 	quad[0].texcoord0 = D3DXVECTOR2( 0.0f,	0.0f );
@@ -488,7 +499,7 @@ HRESULT CALLBACK OnD3D9ResetDevice( IDirect3DDevice9* pd3dDevice,
 // 			float ran2 = rand() % 10000 / 10000.f - 0.5f;
 // 			startVertex[i] = D3DXVECTOR4(ran0 * 10, ran1 * 10, ran2 * 10, 1);
  			float ran2 = rand() % 10000 / 10000.f;
-			startVertex[i] = D3DXVECTOR4(0, 0, 0, ran2 > 0.9999 ? 1.0 : 0.1 );
+			startVertex[i] = D3DXVECTOR4(-10000, -10000, -10000, ran2 > 0.9999 ? 2.0 : 1.0 );
 		}
 
 
@@ -505,7 +516,7 @@ HRESULT CALLBACK OnD3D9ResetDevice( IDirect3DDevice9* pd3dDevice,
 			float ran0 = rand() % 10000 / 10000.f - 0.5f;
 			float ran1 = rand() % 10000 / 10000.f - 0.5f;
 			float ran2 = rand() % 10000 / 10000.f - 0.5f;
-			startVertex[i] = D3DXVECTOR4(ran0 *initSpeed * 0.01, ran1 * initSpeed, ran2 * initSpeed * 0.01, 1);
+			startVertex[i] = D3DXVECTOR4(0, 0, 0, 0);
 		}
 
 
@@ -561,7 +572,7 @@ void CALLBACK OnD3D9FrameRender( IDirect3DDevice9* pd3dDevice, double fTime, flo
 		fElapsedTime = 0;
 	}
 
-	
+	static int s_emitted = 0;
 
     // Clear the render target and the zbuffer 
     V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 0, 0, 0 ), 1.0f, 0 ) );
@@ -583,20 +594,109 @@ void CALLBACK OnD3D9FrameRender( IDirect3DDevice9* pd3dDevice, double fTime, flo
 		pos[2] = D3DXVECTOR4(sinf(fTime - 0.5) * 5,cosf(fTime - 0.5) * 2,cosf(fTime + 0.5) * 5,0);
 
 		// RT UPDATE VELOCITY
-		g_content.PushVelRT(pd3dDevice);
+
 		{
 			pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 			pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 			pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 			pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			pd3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			D3DXHANDLE tech = g_pEffect9->GetTechniqueByName( "Eular_Attraction" );
-			g_pEffect9->SetTechnique( tech );
+
+			D3DXHANDLE tech;
+
+
+
+			// EVERYFRAME
+			//g_pEffect9->SetInt( "g_emitCount", 0);
+			
+			// EXPIRE ROUTINE
+			if (true)
+			{
+				g_content.PushVelRT(pd3dDevice);
+				g_content.PushPosRT(pd3dDevice, 1);
+
+				g_pEffect9->SetTechnique( "Expire" );
+	
+				UINT pass;
+				if( SUCCEEDED( g_pEffect9->Begin( &pass, NULL ) ) )
+				{
+					g_pEffect9->BeginPass( 0 );
+
+					pd3dDevice->SetTexture(0, g_content.g_prevVELRT);
+					pd3dDevice->SetTexture(1, g_content.g_prevPOSRT);
+
+					DrawQuad( pd3dDevice, SQRT_PARTICLE_COUNT, SQRT_PARTICLE_COUNT );
+
+					g_pEffect9->EndPass();
+
+
+					g_pEffect9->End();
+				}
+
+				g_content.Swap();
+				pd3dDevice->SetRenderTarget(1, NULL);
+			}
+
+
+
+			// IF NEED EMIT
+			static float s_emitTimer = 0;
+			s_emitTimer += fElapsedTime;
+			if (s_emitTimer > 0.01)
+			{
+				g_content.PushVelRT(pd3dDevice);
+				g_content.PushPosRT(pd3dDevice, 1);
+
+
+				s_emitTimer = 0;
+				// EMIT
+				g_pEffect9->SetTechnique( "Emit" );
+				g_pEffect9->SetInt( "g_emitCount", 1);
+				
+				float initSpeed = 5.0f;
+				float ran0 = rand() % 10000 / 10000.f - 0.5f;
+				float ran1 = rand() % 10000 / 10000.f * 0.5 + 0.5;// - 0.5f;
+				float ran2 = rand() % 10000 / 10000.f - 0.5f;
+				g_pEffect9->SetVectorArray( "g_emitParam", &(D3DXVECTOR4(ran0,ran1 * initSpeed,ran2,1)), 1);
+				g_pEffect9->SetVectorArray( "g_emitPos", &(D3DXVECTOR4(0,0,0,1)), 1);
+
+
+				
+				s_emitted++;
+				s_emitted = s_emitted % (SQRT_PARTICLE_COUNT * SQRT_PARTICLE_COUNT);
+				int x = s_emitted % (SQRT_PARTICLE_COUNT );
+				int y = s_emitted / (SQRT_PARTICLE_COUNT );
+				
+				//g_pEffect9->SetVectorArray("g_emitIndex", &(D3DXVECTOR4( (float)x / (float)(SQRT_PARTICLE_COUNT - 1), (float)y / (float)(SQRT_PARTICLE_COUNT - 1),0,1)), 1);
+				g_pEffect9->SetVectorArray("g_emitIndex", &(D3DXVECTOR4( x, y, 0,1)), 1);
+				//g_pEffect9->CommitChanges();
+				g_pEffect9->CommitChanges();
+				UINT pass;
+				if( SUCCEEDED( g_pEffect9->Begin( &pass, NULL ) ) )
+				{
+					g_pEffect9->BeginPass( 0 );
+
+					pd3dDevice->SetTexture(0, g_content.g_prevVELRT);
+					pd3dDevice->SetTexture(1, g_content.g_prevPOSRT);
+
+					DrawQuad( pd3dDevice, SQRT_PARTICLE_COUNT, SQRT_PARTICLE_COUNT );
+
+					g_pEffect9->EndPass();
+
+
+					g_pEffect9->End();
+				}
+
+				g_content.Swap();
+				pd3dDevice->SetRenderTarget(1, NULL);
+			}
+
+
+			g_content.PushVelRT(pd3dDevice);
+			// UPDATE
+			g_pEffect9->SetTechnique( "Eular_Attraction" );
 
 			D3DXVECTOR4 time(fElapsedTime, fElapsedTime, fElapsedTime, fElapsedTime);
-			
-			
-
 			D3DXVECTOR4 force(0, sinf(fTime) * 9.8f,0,0);
 
 			g_pEffect9->SetValue( "g_timeVar", &time, sizeof(D3DXVECTOR4) );
@@ -763,7 +863,7 @@ void CALLBACK OnD3D9FrameRender( IDirect3DDevice9* pd3dDevice, double fTime, flo
 			pd3dDevice->SetStreamSource( 0, g_gpuParticleVB, 0, sizeof(sParticleVert) );
 			pd3dDevice->SetIndices( g_gpuParticleIB );
 
-			pd3dDevice->DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, 0, SQRT_PARTICLE_COUNT * SQRT_PARTICLE_COUNT * 4, 0, SQRT_PARTICLE_COUNT * SQRT_PARTICLE_COUNT * 2); 
+			pd3dDevice->DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, 0, s_emitted * 4, 0, s_emitted * 2); 
 
 			g_pEffect9->EndPass();
 
@@ -811,8 +911,46 @@ void CALLBACK OnD3D9FrameRender( IDirect3DDevice9* pd3dDevice, double fTime, flo
 		pd3dDevice->StretchRect( backbuffer, NULL, surf, NULL, D3DTEXF_POINT );
 		surf->Release();
 
+		// DRAW PARTICLE LIFE
+		{
+			pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			tech = g_pEffect9->GetTechniqueByName( "ShowParticleLife" );
+			g_pEffect9->SetTechnique( tech );
+
+			if( SUCCEEDED( g_pEffect9->Begin( &pass, NULL ) ) )
+			{
+				g_pEffect9->BeginPass( 0 );
+
+				pd3dDevice->SetTexture(0, g_content.g_currVELRT);
+
+				DrawQuad( pd3dDevice, 256, 256, 0, 800 - 256 );
+
+				g_pEffect9->EndPass();
 
 
+				g_pEffect9->End();
+			}
+		}
+
+		{
+			pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			tech = g_pEffect9->GetTechniqueByName( "ShowParticleLife" );
+			g_pEffect9->SetTechnique( tech );
+
+			if( SUCCEEDED( g_pEffect9->Begin( &pass, NULL ) ) )
+			{
+				g_pEffect9->BeginPass( 0 );
+
+				pd3dDevice->SetTexture(0, g_content.g_currPOSRT);
+
+				DrawQuad( pd3dDevice, 256, 256, 256, 800 - 256 );
+
+				g_pEffect9->EndPass();
+
+
+				g_pEffect9->End();
+			}
+		}
 
 
         DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" ); // These events are to help PIX identify what the code is doing
